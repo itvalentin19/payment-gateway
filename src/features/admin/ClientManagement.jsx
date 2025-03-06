@@ -1,94 +1,93 @@
-import { useState, useEffect } from 'react';
-import { 
-  Box,
-  Paper,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  IconButton
-} from '@mui/material';
-import { Edit, Delete, Search } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchClients } from './clientsSlice';
+import React from 'react';
+import { Box, Typography, Button } from '@mui/material';
+
+import { DataGrid } from '@mui/x-data-grid';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const ClientManagement = () => {
-  const dispatch = useDispatch();
-  const { clients } = useSelector((state) => state.clients);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { clients } = useSelector(state => state.clients);
 
-  useEffect(() => {
-    dispatch(fetchClients());
-  }, [dispatch]);
+  // Temporary data - update with real data structure later
+  const clientData = [
+    {
+      id: 1,
+      name: 'Client 1',
+      role: 'admin',
+      email: 'client1@example.com',
+      tier: 'Tier 1',
+      status: 'Active'
+    }
+  ];
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const clientColumns = [
+    { field: 'id', headerName: 'Client ID', width: 100 },
+    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'role', headerName: 'Role', width: 120 },
+    { field: 'email', headerName: 'Email', width: 200 },
+    { field: 'tier', headerName: 'Tier', width: 120 },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 120,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            px: 1,
+            borderRadius: 1,
+            backgroundColor: params.value === 'Active' ? '#4caf5020' : '#f4433620',
+            color: params.value === 'Active' ? '#4caf50' : '#f44336'
+          }}
+        >
+          {params.value}
+        </Box>
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      renderCell: (params) => (
+        <Box>
+          <Button
+            color="primary"
+            component={Link}
+            to={`/clients/edit/${params.row.id}`}
+          >
+            Edit
+          </Button>
+          <Button color="error">Delete</Button>
+        </Box>
+      )
+    }
+  ];
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h5">Client Management</Typography>
-        <TextField
-          variant="outlined"
-          size="small"
-          placeholder="Search clients..."
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-          }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h4" gutterBottom>
+          Client Management
+        </Typography>
+        <Button
+          variant="contained"
+          component={Link}
+          to="add-client"
+        >
+          Add New Client
+        </Button>
       </Box>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Last Active</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredClients.map((client) => (
-              <TableRow key={client.id}>
-                <TableCell>{client.name}</TableCell>
-                <TableCell>{client.email}</TableCell>
-                <TableCell>
-                  <Box sx={{ 
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    px: 1,
-                    borderRadius: 1,
-                    backgroundColor: client.active ? '#4caf5020' : '#f4433620',
-                    color: client.active ? '#4caf50' : '#f44336'
-                  }}>
-                    {client.active ? 'Active' : 'Inactive'}
-                  </Box>
-                </TableCell>
-                <TableCell>{new Date(client.lastActive).toLocaleDateString()}</TableCell>
-                <TableCell align="right">
-                  <IconButton color="primary">
-                    <Edit />
-                  </IconButton>
-                  <IconButton color="error">
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={clientData}
+          columns={clientColumns}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+        />
+      </div>
+    </Box>
   );
 };
 

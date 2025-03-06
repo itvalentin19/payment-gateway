@@ -11,12 +11,13 @@ const theme = createTheme({
       contrastText: '#fff',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#fff',
+      default: '#ffffff',
+      paper: '#f5f5f5',
+      drawer: '#dc004e'
     },
     text: {
-      primary: 'rgba(0, 0, 0, 0.87)',
-      secondary: 'rgba(0, 0, 0, 0.54)',
+      primary: 'rgba(0, 0, 0, 0.8)',
+      secondary: '#49454F',
     },
   },
   typography: {
@@ -24,6 +25,7 @@ const theme = createTheme({
       'Roboto',
       '"Helvetica Neue"',
       'Arial',
+      'Inter',
       'sans-serif'
     ].join(','),
     h6: {

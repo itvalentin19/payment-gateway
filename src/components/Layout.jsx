@@ -1,20 +1,31 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, NavLink, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText, Box, CssBaseline } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PaymentIcon from '@mui/icons-material/Payment';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { useSelector } from 'react-redux';
+import { logout } from '../../src/features/auth/authSlice';
 
 const drawerWidth = 240;
 
 const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { role } = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -22,6 +33,7 @@ const Layout = ({ children }) => {
 
   const adminNavItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'Account Mgmt', icon: <PeopleIcon />, path: '/account-management' },
     { text: 'Client Management', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Transactions', icon: <PaymentIcon />, path: '/transactions' },
     { text: 'API Documentation', icon: <DescriptionIcon />, path: '/api-docs' },
@@ -36,15 +48,43 @@ const Layout = ({ children }) => {
   const navItems = role === 'admin' ? adminNavItems : clientNavItems;
 
   const drawer = (
-    <div>
-      <Toolbar />
+    <div style={{ padding: 20 }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          sx={{ width: 40, height: 40, border: '50%', bgcolor: '#EADDFF' }}
+        >
+          <PersonOutlineIcon sx={{ color: '#4F378A' }} />
+        </IconButton>
+        <Typography>Admin</Typography>
+      </Toolbar>
       <List>
         {navItems.map((item) => (
-          <ListItem button key={item.text} component="a" href={item.path}>
-            <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItem 
+            button 
+            key={item.text} 
+            component={NavLink} 
+            to={item.path}
+            sx={{
+              borderRadius: '40px',
+              padding: '20px',
+              '&.active': {
+                backgroundColor: '#E2E1E1',
+                '& .MuiListItemText-primary': {
+                  fontWeight: 'bold',
+                  color: '#49454F'
+                }
+              }
+            }}
+          >
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
+        <ListItem button key={'Logout'} component="a" onClick={handleLogout} sx={{ cursor: 'pointer' }}>
+          <ListItemText primary={'Logout'} />
+        </ListItem>
       </List>
     </div>
   );
@@ -59,19 +99,17 @@ const Layout = ({ children }) => {
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{ mr: 2, display: { sm: 'none' } }}
+        >
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Payment Gateway Dashboard
-          </Typography>
         </Toolbar>
       </AppBar>
       <Box
@@ -88,7 +126,7 @@ const Layout = ({ children }) => {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, bgcolor: 'white' },
           }}
         >
           {drawer}
@@ -97,7 +135,7 @@ const Layout = ({ children }) => {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, bgcolor: '#F7F2FA' },
           }}
           open
         >
@@ -106,7 +144,7 @@ const Layout = ({ children }) => {
       </Box>
       <Box
         component="main"
-        sx={{ 
+        sx={{
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },

@@ -12,6 +12,11 @@ import DashboardPage from './features/dashboard/DashboardPage';
 import ClientManagement from './features/admin/ClientManagement';
 import TransactionMonitoring from './features/transactions/TransactionMonitoring';
 import ProfileSettings from './features/profile/ProfileSettings';
+import AccountManagement from './features/admin/AccountManagement';
+import ThresholdSetting from './features/admin/ThresholdSetting';
+import AddAccount from './features/admin/AddAccount';
+import AddPackage from './features/admin/AddPackage';
+import AddClient from './features/admin/AddClient';
 
 function App() {
   return (
@@ -22,13 +27,23 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
-              
+
               <Route element={<ProtectedRoute requiredRole="admin" />}>
                 <Route element={<Layout />}>
                   <Route path="/" element={<DashboardPage />} />
-                  <Route path="/clients" element={<ClientManagement />} />
+                  <Route path="/clients">
+                    <Route index element={<ClientManagement />} />
+                    <Route path="add-client" element={<AddClient />} />
+                    <Route path="edit/:clientId" element={<AddClient />} />
+                  </Route>
                   <Route path="/transactions" element={<TransactionMonitoring />} />
                   <Route path="/api-docs" element={<div>API Docs</div>} />
+                  <Route path="/account-management">
+                    <Route index element={<AccountManagement />} />
+                    <Route path="add-account" element={<AddAccount />} />
+                    <Route path="add-package" element={<AddPackage />} />
+                    <Route path="threshold-settings" element={<ThresholdSetting />} />
+                  </Route>
                 </Route>
               </Route>
 

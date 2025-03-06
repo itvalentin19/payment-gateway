@@ -20,7 +20,17 @@ const initialState = {
 const clientsSlice = createSlice({
   name: 'clients',
   initialState,
-  reducers: {},
+  reducers: {
+    addClient: (state, action) => {
+      state.clients.push(action.payload);
+    },
+    updateClient: (state, action) => {
+      const index = state.clients.findIndex(c => c.id === action.payload.id);
+      if (index !== -1) {
+        state.clients[index] = action.payload;
+      }
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchClients.pending, (state) => {
@@ -37,4 +47,7 @@ const clientsSlice = createSlice({
   }
 });
 
+export const { addClient, updateClient } = clientsSlice.actions;
+export const selectClientById = (state, clientId) => 
+  state.clients.clients.find(client => client.id === clientId);
 export default clientsSlice.reducer;
