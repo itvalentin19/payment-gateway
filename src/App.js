@@ -14,9 +14,6 @@ import TransactionMonitoring from './features/transactions/TransactionMonitoring
 import ProfileSettings from './features/profile/ProfileSettings';
 
 function App() {
-  // return (
-  //   <LoginPage />
-  // )
   return (
     <Provider store={store}>
       <PersistGate loading={false} persistor={persistor}>

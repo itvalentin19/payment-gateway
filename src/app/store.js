@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore } from 'redux-persist';
-import persistedAuthReducer from '../features/auth/authSlice';
+import { persistedAuthReducer } from '../features/auth/authSlice';
 import clientsReducer from '../features/admin/clientsSlice';
 import transactionsReducer from '../features/transactions/transactionsSlice';
 import profileReducer from '../features/profile/profileSlice';
@@ -14,7 +14,9 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+      },
     }),
   devTools: process.env.NODE_ENV !== 'production'
 });
