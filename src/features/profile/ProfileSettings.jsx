@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { 
+import {
   Box,
   Paper,
   Typography,
   TextField,
   Button,
   CircularProgress,
-  Grid,
+  Grid2,
   Alert
 } from '@mui/material';
 import { Formik } from 'formik';
@@ -49,11 +49,19 @@ const ProfileSettings = () => {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Profile Settings</Typography>
-      
+    <Paper sx={{ p: 3 }} elevation={0}>
+      <Typography variant="h3" gutterBottom>Profile Settings</Typography>
+
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+      {successMessage && <Alert severity="success" /* `ProfileSettings` is a component that likely
+      displays and allows users to manage their profile
+      settings. This component is rendered in the route
+      path "/profile" within the application. It may
+      include features such as updating user
+      information, changing passwords, managing
+      preferences, or any other profile-related
+      functionalities. */
+        sx={{ mb: 2 }}>{successMessage}</Alert>}
 
       <Formik
         initialValues={{
@@ -76,11 +84,11 @@ const ProfileSettings = () => {
           isSubmitting,
         }) => (
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+            <Grid2 container spacing={3}>
+              <Grid2 item size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Account Information</Typography>
-                  
+
                   <TextField
                     fullWidth
                     margin="normal"
@@ -105,10 +113,21 @@ const ProfileSettings = () => {
                     error={touched.email && Boolean(errors.email)}
                     helperText={touched.email && errors.email}
                   />
-                </Paper>
-              </Grid>
 
-              <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Package"
+                    name="package"
+                    value={user?.package || ''}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Paper>
+              </Grid2>
+
+              <Grid2 item size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Change Password</Typography>
 
@@ -151,9 +170,9 @@ const ProfileSettings = () => {
                     helperText={touched.confirmPassword && errors.confirmPassword}
                   />
                 </Paper>
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12}>
+              <Grid2 item size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Button
                     type="submit"
@@ -168,8 +187,8 @@ const ProfileSettings = () => {
                     )}
                   </Button>
                 </Box>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           </form>
         )}
       </Formik>

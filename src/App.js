@@ -50,7 +50,7 @@ function App() {
                 </Route>
               </Route>
 
-              <Route element={<ProtectedRoute requiredRole="client" />}>
+              <Route element={<ProtectedRoute requiredRole="user" />}>
                 <Route element={<Layout />}>
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/profile" element={<ProfileSettings />} />

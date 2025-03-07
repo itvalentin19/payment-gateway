@@ -16,9 +16,13 @@ export const updateProfile = createAsyncThunk(
 );
 
 const initialState = {
-  user: null,
+  user: {
+    name: 'John Doe',
+    email: 'john@example.com',
+    package: 'Premium',
+  },
   loading: false,
-  error: null
+  error: null,
 };
 
 const profileSlice = createSlice({

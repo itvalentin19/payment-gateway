@@ -58,7 +58,7 @@ const Layout = ({ children }) => {
         >
           <PersonOutlineIcon sx={{ color: '#4F378A' }} />
         </IconButton>
-        <Typography>Admin</Typography>
+        <Typography>{role === 'admin' ? 'Admin' : 'User'}</Typography>
       </Toolbar>
       <List>
         {navItems.map((item) => (
