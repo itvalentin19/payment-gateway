@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
-import { Grid, Paper, Typography, Box } from '@mui/material';
-import { 
+import { Grid2, Paper, Typography, Box } from '@mui/material';
+import {
   AccountBalance as BalanceIcon,
   Payment as TransactionsIcon,
   People as ClientsIcon,
@@ -11,19 +11,19 @@ const DashboardPage = () => {
   const { role } = useSelector((state) => state.auth);
 
   const stats = [
-    { 
+    {
       title: role === 'admin' ? 'Total Transactions' : 'Your Transactions',
       value: '2,845',
       icon: <TransactionsIcon fontSize="large" />,
       color: '#1976d2'
     },
-    { 
+    {
       title: role === 'admin' ? 'Active Clients' : 'Account Balance',
       value: role === 'admin' ? '143' : '$12,450.00',
       icon: role === 'admin' ? <ClientsIcon fontSize="large" /> : <BalanceIcon fontSize="large" />,
       color: '#4caf50'
     },
-    { 
+    {
       title: role === 'admin' ? 'System Health' : 'Recent Activity',
       value: role === 'admin' ? '98%' : '23 New',
       icon: <ReportsIcon fontSize="large" />,
@@ -32,23 +32,23 @@ const DashboardPage = () => {
   ];
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
+    <Grid2 container spacing={3}>
+      <Grid2 item size={12}>
         <Typography variant="h4" gutterBottom>
           {role === 'admin' ? 'Admin Dashboard' : 'Client Dashboard'}
         </Typography>
-      </Grid>
-      
+      </Grid2>
+
       {stats.map((stat, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
-          <Paper sx={{ 
-            p: 3, 
-            display: 'flex', 
+        <Grid2 item size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+          <Paper sx={{
+            p: 3,
+            display: 'flex',
             alignItems: 'center',
             backgroundColor: stat.color + '15',
             borderLeft: `4px solid ${stat.color}`
           }}>
-            <Box sx={{ 
+            <Box sx={{
               backgroundColor: stat.color + '30',
               p: 1.5,
               borderRadius: '50%',
@@ -65,9 +65,9 @@ const DashboardPage = () => {
               </Typography>
             </div>
           </Paper>
-        </Grid>
+        </Grid2>
       ))}
-    </Grid>
+    </Grid2>
   );
 };
 

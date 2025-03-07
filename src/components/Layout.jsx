@@ -35,14 +35,17 @@ const Layout = ({ children }) => {
     { text: 'Account Mgmt', icon: <PeopleIcon />, path: '/account-management' },
     { text: 'Client Management', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Reports', icon: <DescriptionIcon />, path: '/reports' },
-    { text: 'Transactions', icon: <PaymentIcon />, path: '/transactions' },
+    { text: 'Transaction', icon: <PaymentIcon />, path: '/transactions' },
     { text: 'API Documentation', icon: <DescriptionIcon />, path: '/api-docs' },
   ];
 
   const clientNavItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Profile', icon: <AccountCircleIcon />, path: '/profile' },
-    { text: 'Transaction History', icon: <PaymentIcon />, path: '/transaction-history' },
+    { text: 'Account Mgmt', icon: <PeopleIcon />, path: '/account-management' },
+    { text: 'Profile Setting', icon: <AccountCircleIcon />, path: '/profile' },
+    { text: 'Reports', icon: <DescriptionIcon />, path: '/reports' },
+    { text: 'Transaction', icon: <PaymentIcon />, path: '/transaction-history' },
+    { text: 'API Documentation', icon: <DescriptionIcon />, path: '/api-docs' },
   ];
 
   const navItems = role === 'admin' ? adminNavItems : clientNavItems;

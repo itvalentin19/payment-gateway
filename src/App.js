@@ -30,31 +30,25 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
 
-              <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/" element={<DashboardPage />} />
-                  <Route path="/clients">
+                  <Route path="/clients" element={<ProtectedRoute requiredRole="admin" />}>
                     <Route index element={<ClientManagement />} />
                     <Route path="add-client" element={<AddClient />} />
                     <Route path="edit/:clientId" element={<AddClient />} />
                   </Route>
                   <Route path="/reports" element={<ReportPage />} />
-                  <Route path="/transactions" element={<TransactionMonitoring />} />
-                  <Route path="/api-docs" element={<ProtectedRoute><ApiDocsPage /></ProtectedRoute>} />
+                  <Route path="/transactions" element={<ProtectedRoute  requiredRole="admin" ><TransactionMonitoring /></ProtectedRoute>} />
+                  <Route path="/api-docs" element={<ApiDocsPage />} />
                   <Route path="/account-management">
                     <Route index element={<AccountManagement />} />
                     <Route path="add-account" element={<AddAccount />} />
                     <Route path="add-package" element={<AddPackage />} />
                     <Route path="threshold-settings" element={<ThresholdSetting />} />
                   </Route>
-                </Route>
-              </Route>
-
-              <Route element={<ProtectedRoute requiredRole="user" />}>
-                <Route element={<Layout />}>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/profile" element={<ProfileSettings />} />
-                  <Route path="/transaction-history" element={<TransactionMonitoring />} />
+                  <Route path="/profile" element={<ProtectedRoute  requiredRole="user" ><ProfileSettings /></ProtectedRoute>} />
+                  <Route path="/transaction-history" element={<ProtectedRoute  requiredRole="user" ><TransactionMonitoring /></ProtectedRoute>} />
                 </Route>
               </Route>
 

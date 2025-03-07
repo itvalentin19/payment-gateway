@@ -4,11 +4,11 @@ import storage from 'redux-persist/lib/storage';
 
 export const login = createAsyncThunk('auth/login', async (credentials) => {
   // Actual API call would go here
-  return new Promise((resolve) => 
-    setTimeout(() => resolve({ 
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({
       accessToken: 'dummy-access-token',
       refreshToken: 'dummy-refresh-token',
-      role: 'admin' 
+      role: credentials?.email?.includes('admin') ? 'admin' : 'user'
     }), 1000)
   );
 });
@@ -56,7 +56,7 @@ const authSlice = createSlice({
 const persistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['isAuthenticated', 'role', 'accessToken', 'refreshToken']
+  // whitelist: ['isAuthenticated', 'role', 'accessToken', 'refreshToken']
 };
 
 export const { logout } = authSlice.actions;
