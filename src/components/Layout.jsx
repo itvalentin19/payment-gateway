@@ -62,10 +62,10 @@ const Layout = ({ children }) => {
       </Toolbar>
       <List>
         {navItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.text} 
-            component={NavLink} 
+          <ListItem
+            button
+            key={item.text}
+            component={NavLink}
             to={item.path}
             sx={{
               borderRadius: '40px',
@@ -82,7 +82,18 @@ const Layout = ({ children }) => {
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
-        <ListItem button key={'Logout'} component="a" onClick={handleLogout} sx={{ cursor: 'pointer' }}>
+        <ListItem button key={'Logout'} component="a" onClick={handleLogout} sx={{
+          borderRadius: '40px',
+          padding: '20px',
+          cursor: 'pointer',
+          '&.active': {
+            backgroundColor: '#E2E1E1',
+            '& .MuiListItemText-primary': {
+              fontWeight: 'bold',
+              color: '#49454F'
+            }
+          }
+        }}>
           <ListItemText primary={'Logout'} />
         </ListItem>
       </List>

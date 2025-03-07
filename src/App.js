@@ -11,6 +11,7 @@ import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ClientManagement from './features/admin/ClientManagement';
 import ReportPage from './features/reports/ReportPage';
+import ApiDocsPage from './features/api-docs/ApiDocsPage';
 import TransactionMonitoring from './features/transactions/TransactionMonitoring';
 import ProfileSettings from './features/profile/ProfileSettings';
 import AccountManagement from './features/admin/AccountManagement';
@@ -39,7 +40,7 @@ function App() {
                   </Route>
                   <Route path="/reports" element={<ReportPage />} />
                   <Route path="/transactions" element={<TransactionMonitoring />} />
-                  <Route path="/api-docs" element={<div>API Docs</div>} />
+                  <Route path="/api-docs" element={<ProtectedRoute><ApiDocsPage /></ProtectedRoute>} />
                   <Route path="/account-management">
                     <Route index element={<AccountManagement />} />
                     <Route path="add-account" element={<AddAccount />} />
