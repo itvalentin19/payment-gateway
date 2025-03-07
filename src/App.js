@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import ClientManagement from './features/admin/ClientManagement';
+import ReportPage from './features/reports/ReportPage';
 import TransactionMonitoring from './features/transactions/TransactionMonitoring';
 import ProfileSettings from './features/profile/ProfileSettings';
 import AccountManagement from './features/admin/AccountManagement';
@@ -36,6 +37,7 @@ function App() {
                     <Route path="add-client" element={<AddClient />} />
                     <Route path="edit/:clientId" element={<AddClient />} />
                   </Route>
+                  <Route path="/reports" element={<ReportPage />} />
                   <Route path="/transactions" element={<TransactionMonitoring />} />
                   <Route path="/api-docs" element={<div>API Docs</div>} />
                   <Route path="/account-management">
