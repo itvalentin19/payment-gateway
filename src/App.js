@@ -13,6 +13,7 @@ import ClientManagement from './features/admin/ClientManagement';
 import ReportPage from './features/reports/ReportPage';
 import ApiDocsPage from './features/api-docs/ApiDocsPage';
 import TransactionMonitoring from './features/transactions/TransactionMonitoring';
+import TransactionDetails from './features/transactions/TransactionDetails';
 import ProfileSettings from './features/profile/ProfileSettings';
 import AccountManagement from './features/admin/AccountManagement';
 import ThresholdSetting from './features/admin/ThresholdSetting';
@@ -40,6 +41,7 @@ function App() {
                   </Route>
                   <Route path="/reports" element={<ReportPage />} />
                   <Route path="/transactions" element={<ProtectedRoute  requiredRole="admin" ><TransactionMonitoring /></ProtectedRoute>} />
+                  <Route path="/transactions/:transactionId" element={<ProtectedRoute requiredRole="admin"><TransactionDetails /></ProtectedRoute>} />
                   <Route path="/api-docs" element={<ApiDocsPage />} />
                   <Route path="/account-management">
                     <Route index element={<AccountManagement />} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   Box,
   Paper,
   Table,
@@ -13,15 +13,19 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  IconButton,
+  Typography
 } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import { Search, NavigateNext as ActionIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransactions } from './transactionsSlice';
+import { fetchTransactions, addTransactions } from './transactionsSlice';
 
 const TransactionMonitoring = () => {
   const dispatch = useDispatch();
   const { transactions } = useSelector((state) => state.transactions);
+  const { role } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -30,22 +34,41 @@ const TransactionMonitoring = () => {
     dispatch(fetchTransactions());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(addTransactions(transactions))
+  }, [dispatch, transactions]);
+
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.amount.includes(searchTerm);
+      transaction.amount.includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
     const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const navigate = useNavigate();
+
   const statusColor = {
-    completed: 'success',
     pending: 'warning',
-    failed: 'error'
+    in_progress: 'info',
+    completed: 'success',
+    error: 'error'
   };
 
+  // Separate transactions into two groups
+  const pendingWithdrawals = filteredTransactions.filter(
+    t => t.paidAmount === 0
+  );
+
+  const processedTransactions = filteredTransactions.filter(
+    t => t.paidAmount > 0
+  );
+
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper sx={{ p: 3 }} elevation={0}>
+      <Typography variant="h4" gutterBottom>
+        Transaction
+      </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <TextField
           variant="outlined"
@@ -88,41 +111,91 @@ const TransactionMonitoring = () => {
         </FormControl>
       </Box>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Reference</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Currency</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Customer</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTransactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                <TableCell>{transaction.reference}</TableCell>
-                <TableCell>{transaction.amount}</TableCell>
-                <TableCell>{transaction.currency}</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={transaction.status} 
-                    color={statusColor[transaction.status]}
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>{transaction.type}</TableCell>
-                <TableCell>{transaction.customer.name}</TableCell>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" gutterBottom>New Withdrawal Requests</Typography>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Bank</TableCell>
+                <TableCell>Acc</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {pendingWithdrawals.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
+                  <TableCell>{transaction.customer.name}</TableCell>
+                  <TableCell>{transaction.amount}</TableCell>
+                  <TableCell>{transaction.bank}</TableCell>
+                  <TableCell>{transaction.account}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label="Pending"
+                      color={statusColor.pending}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
+                      <ActionIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      <Box>
+        <Typography variant="h6" gutterBottom>Processed Transactions</Typography>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>By</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {processedTransactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>{transaction.id}</TableCell>
+                  <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
+                  <TableCell>{transaction.customer.name}</TableCell>
+                  <TableCell>{transaction.amount}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={transaction.status}
+                      color={statusColor[transaction.status]}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>Admin</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
+                      <ActionIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </Paper>
   );
 };
