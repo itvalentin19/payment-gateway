@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { 
-  Grid2, 
-  Paper, 
-  Typography, 
-  Box, 
+import {
+  Grid2,
+  Paper,
+  Typography,
+  Box,
   Tabs,
   Tab,
   Table,
@@ -45,7 +45,7 @@ const DashboardPage = () => {
       <Grid2 item size={12}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h4">Overview</Typography>
-          <Tabs value={tabValue} onChange={(e, newVal) => setTabValue(newVal)}>
+          <Tabs value={tabValue} onChange={(e, newVal) => setTabValue(newVal)} sx={{ '& .MuiTab-root': { p: { sm: 2, xs: 1 }, minWidth: { sm: '90px', xs: 'auto' } } }}>
             <Tab label="Monthly" />
             <Tab label="Weekly" />
             <Tab label="Today" />
@@ -56,7 +56,7 @@ const DashboardPage = () => {
       {/* Totals Section */}
       <Grid2 item size={12} container spacing={3}>
         <Grid2 item size={{ xs: 12, sm: 6 }}>
-          <Paper sx={{ 
+          <Paper sx={{
             p: 3,
             display: 'flex',
             alignItems: 'center',
@@ -80,7 +80,7 @@ const DashboardPage = () => {
           </Paper>
         </Grid2>
         <Grid2 item size={{ xs: 12, sm: 6 }}>
-          <Paper sx={{ 
+          <Paper sx={{
             p: 3,
             display: 'flex',
             alignItems: 'center',
@@ -138,56 +138,56 @@ const DashboardPage = () => {
       {/* Recent Transactions Table */}
       <Grid2 item size={12} sx={{ mt: 4 }}>
         <Typography variant="h6" gutterBottom>Recent Transactions</Typography>
-        <Paper>
+        <Paper sx={{ overflowX: 'scroll' }}>
           <Table>
-          <TableHead>
-            <TableRow>
-              {role === 'admin' ? (
-                <>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Ref ID</TableCell>
-                  <TableCell>Status</TableCell>
-                </>
-              ) : (
-                <>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Funds</TableCell>
-                  <TableCell>Bank</TableCell>
-                  <TableCell>Account</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Status</TableCell>
-                </>
-              )}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[1,2,3].map((row) => (
-              <TableRow key={row}>
+            <TableHead>
+              <TableRow>
                 {role === 'admin' ? (
                   <>
-                    <TableCell>2025-03-0{row}</TableCell>
-                    <TableCell>${row}500.00</TableCell>
-                    <TableCell>Deposit</TableCell>
-                    <TableCell>REF{row}2345</TableCell>
-                    <TableCell>Completed</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Ref ID</TableCell>
+                    <TableCell>Status</TableCell>
                   </>
                 ) : (
                   <>
-                    <TableCell>TXID{row}234</TableCell>
-                    <TableCell>2025-03-0{row}</TableCell>
-                    <TableCell>${row}200.00</TableCell>
-                    <TableCell>Bank of America</TableCell>
-                    <TableCell>******{row}2345</TableCell>
-                    <TableCell>Withdrawal</TableCell>
-                    <TableCell>Pending</TableCell>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Funds</TableCell>
+                    <TableCell>Bank</TableCell>
+                    <TableCell>Account</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Status</TableCell>
                   </>
                 )}
               </TableRow>
-            ))}
-          </TableBody>
+            </TableHead>
+            <TableBody>
+              {[1, 2, 3].map((row) => (
+                <TableRow key={row}>
+                  {role === 'admin' ? (
+                    <>
+                      <TableCell>2025-03-0{row}</TableCell>
+                      <TableCell>${row}500.00</TableCell>
+                      <TableCell>Deposit</TableCell>
+                      <TableCell>REF{row}2345</TableCell>
+                      <TableCell>Completed</TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell>TXID{row}234</TableCell>
+                      <TableCell>2025-03-0{row}</TableCell>
+                      <TableCell>${row}200.00</TableCell>
+                      <TableCell>Bank of America</TableCell>
+                      <TableCell>******{row}2345</TableCell>
+                      <TableCell>Withdrawal</TableCell>
+                      <TableCell>Pending</TableCell>
+                    </>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         </Paper>
       </Grid2>

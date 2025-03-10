@@ -66,8 +66,8 @@ const ClientManagement = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h4" gutterBottom>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h4" gutterBottom sx={{ whiteSpace: 'nowrap' }}>
           Client Management
         </Typography>
         <Button
@@ -75,7 +75,7 @@ const ClientManagement = () => {
           component={Link}
           to="add-client"
         >
-          Add New Client
+          Add New
         </Button>
       </Box>
 

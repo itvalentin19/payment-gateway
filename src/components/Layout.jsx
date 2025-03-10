@@ -160,9 +160,11 @@ const Layout = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          marginTop: '64px' // Height of AppBar
+          p: { sm: 3, xs: 1 },
+          width: { sm: `calc(100% - ${drawerWidth}px)`, xs: '100vw' },
+          marginTop: '64px', // Height of AppBar
+          overflowX: 'scroll',
+          height: { xs: '93vh', sm: '100%' }
         }}
       >
         <Outlet />

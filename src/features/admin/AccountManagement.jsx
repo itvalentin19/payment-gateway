@@ -35,7 +35,7 @@ const AccountManagement = () => {
       </Typography>
 
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap' }}>
           <Typography variant="h6">Payment Accounts</Typography>
           <Box>
             <Button variant="contained" sx={{ mr: 2 }} component={Link} to="add-account">
