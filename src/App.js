@@ -20,6 +20,8 @@ import ThresholdSetting from './features/admin/ThresholdSetting';
 import AddAccount from './features/admin/AddAccount';
 import AddPackage from './features/admin/AddPackage';
 import AddClient from './features/admin/AddClient';
+import Transactions from './features/transactions/Transactions';
+import WithdrawalPage from './features/transactions/WithdrawalPage';
 
 function App() {
   return (
@@ -40,17 +42,21 @@ function App() {
                     <Route path="edit/:clientId" element={<AddClient />} />
                   </Route>
                   <Route path="/reports" element={<ReportPage />} />
-                  <Route path="/transactions" element={<ProtectedRoute  requiredRole="admin" ><TransactionMonitoring /></ProtectedRoute>} />
+                  <Route path="/transactions" element={<ProtectedRoute requiredRole="admin" ><TransactionMonitoring /></ProtectedRoute>} />
                   <Route path="/transactions/:transactionId" element={<ProtectedRoute requiredRole="admin"><TransactionDetails /></ProtectedRoute>} />
                   <Route path="/api-docs" element={<ApiDocsPage />} />
                   <Route path="/account-management">
                     <Route index element={<AccountManagement />} />
                     <Route path="add-account" element={<AddAccount />} />
-                    <Route path="add-package" element={<AddPackage />} />
-                    <Route path="threshold-settings" element={<ThresholdSetting />} />
+                    <Route path="edit-account/:accountId" element={<AddAccount />} />
+                    <Route path="add-package" element={<ProtectedRoute requiredRole="admin" ><AddPackage /></ProtectedRoute>} />
+                    <Route path="threshold-settings" element={<ProtectedRoute requiredRole="admin" ><ThresholdSetting /></ProtectedRoute>} />
                   </Route>
-                  <Route path="/profile" element={<ProtectedRoute  requiredRole="user" ><ProfileSettings /></ProtectedRoute>} />
-                  <Route path="/transaction-history" element={<ProtectedRoute  requiredRole="user" ><TransactionMonitoring /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute requiredRole="user" ><ProfileSettings /></ProtectedRoute>} />
+                  <Route path="/user-transactions" element={<ProtectedRoute requiredRole="user" />}>
+                    <Route index element={<Transactions />} />
+                    <Route path="withdrawal" element={<WithdrawalPage />} />
+                  </Route>
                 </Route>
               </Route>
 

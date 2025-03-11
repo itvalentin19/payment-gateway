@@ -50,7 +50,7 @@ const ProfileSettings = () => {
 
   return (
     <Paper sx={{ p: 3 }} elevation={0}>
-      <Typography variant="h3" gutterBottom>Profile Settings</Typography>
+      <Typography variant="h4" gutterBottom>Profile Settings</Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {successMessage && <Alert severity="success" /* `ProfileSettings` is a component that likely

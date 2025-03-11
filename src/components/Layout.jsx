@@ -44,7 +44,7 @@ const Layout = ({ children }) => {
     { text: 'Account Mgmt', icon: <PeopleIcon />, path: '/account-management' },
     { text: 'Profile Setting', icon: <AccountCircleIcon />, path: '/profile' },
     { text: 'Reports', icon: <DescriptionIcon />, path: '/reports' },
-    { text: 'Transaction', icon: <PaymentIcon />, path: '/transaction-history' },
+    { text: 'Transaction', icon: <PaymentIcon />, path: '/user-transactions' },
     { text: 'API Documentation', icon: <DescriptionIcon />, path: '/api-docs' },
   ];
 
@@ -163,7 +163,7 @@ const Layout = ({ children }) => {
           p: { sm: 3, xs: 1 },
           width: { sm: `calc(100% - ${drawerWidth}px)`, xs: '100vw' },
           marginTop: '64px', // Height of AppBar
-          overflowX: 'scroll',
+          overflowX: 'auto',
           height: { xs: '93vh', sm: '100%' }
         }}
       >

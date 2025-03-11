@@ -23,7 +23,7 @@ const ApiDocsPage = () => {
   });
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>
         API Documentation Upload
       </Typography>
