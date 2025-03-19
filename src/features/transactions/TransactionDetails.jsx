@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   Box,
   Paper,
   Typography,
@@ -15,18 +15,60 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { addSubPayment } from './transactionsSlice';
+import { addSubPayment, fetchTransactions, setSelectedTransaction } from './transactionsSlice';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
+import { setLoading, showToast } from '../ui/uiSlice';
 
 const TransactionDetails = () => {
   const { transactionId } = useParams();
-  
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { transactions } = useSelector((state) => state.transactions);  
-  const transaction = transactions.find(t => t.id === parseInt(transactionId));
-  
+  const { transactions, query, selected } = useSelector((state) => state.transactions);
+  const transaction = selected ?? transactions.find(t => t.id === parseInt(transactionId));
+
   const [paymentId, setPaymentId] = useState('');
   const [amount, setAmount] = useState('');
+
+  useEffect(() => {
+    if (transactionId && transactions?.length === 0) {
+      dispatch(fetchTransactions(query));
+    }
+  }, [transactions, transactionId]);
+
+  useEffect(() => {
+    console.log(transactionId);
+    fetchTransaction();
+  }, [transactionId]);
+
+  const fetchTransaction = async () => {
+    try {
+      const res = await apiClient.get(ENDPOINTS.GET_TRANSACTION.replace("{id}", transactionId));
+      console.log(res);
+      
+      if (res.status === 200) {
+        dispatch(setSelectedTransaction(res.data));
+      } else {
+        dispatch(showToast({
+          message: "Failed to load transaction!",
+          type: 'error'
+        }))
+      }
+    } catch (error) {
+      let message;
+      if (error.response && error.response.data) {
+        message = error.response.data.message;
+      } else {
+        message = error.message;
+      }
+
+      dispatch(setLoading(false));
+      dispatch(showToast({
+        message: message || "Something went wrong!",
+        type: 'error'
+      }))
+    }
+  }
 
   const handleAddPayment = () => {
     if (paymentId && amount > 0) {
@@ -39,7 +81,7 @@ const TransactionDetails = () => {
     }
   };
 
-  if (!transaction) return <Typography variant="h6">Transaction not found</Typography>;
+  if (!transaction) return <Typography variant="h6">Loading...</Typography>;
 
   const totalPaid = transaction.subPayments?.reduce((sum, p) => sum + p.amount, 0) || 0;
   const remaining = transaction.amount - totalPaid;
@@ -52,10 +94,10 @@ const TransactionDetails = () => {
 
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6">Client Information</Typography>
-        <Typography>Name: {transaction.customer.name}</Typography>
+        <Typography>Name: {transaction.transactionAccount?.name}</Typography>
         <Typography>Requested Amount: {transaction.amount}</Typography>
-        <Typography>Bank: {transaction.bank}</Typography>
-        <Typography>Account: {transaction.account}</Typography>
+        <Typography>Bank: {transaction.transactionAccount?.bank}</Typography>
+        <Typography>Account: {transaction.transactionAccount?.accountNumber}</Typography>
       </Box>
 
       <Box sx={{ mb: 4 }}>
@@ -74,17 +116,17 @@ const TransactionDetails = () => {
             onChange={(e) => setAmount(e.target.value)}
             size="small"
           />
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleAddPayment}
             disabled={!paymentId || !amount}
           >
             Add Payment
           </Button>
         </Box>
-        
-        <Chip 
-          label={`Remaining Amount: ${remaining}`} 
+
+        <Chip
+          label={`Remaining Amount: ${remaining}`}
           color={remaining > 0 ? 'warning' : 'success'}
           sx={{ mb: 2 }}
         />

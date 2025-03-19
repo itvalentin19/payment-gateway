@@ -24,27 +24,27 @@ import { fetchTransactions, addTransactions } from './transactionsSlice';
 
 const TransactionMonitoring = () => {
   const dispatch = useDispatch();
-  const { transactions } = useSelector((state) => state.transactions);
-  const { role } = useSelector((state) => state.auth);
+  const { transactions, query } = useSelector((state) => state.transactions);
+  const { roles } = useSelector((state) => state.auth);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
   useEffect(() => {
-    dispatch(fetchTransactions());
-  }, [dispatch]);
+    dispatch(fetchTransactions(query));
+  }, [dispatch, query]);
 
   useEffect(() => {
     dispatch(addTransactions(transactions))
   }, [dispatch, transactions]);
 
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.amount.includes(searchTerm);
-    const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
-    const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  // const filteredTransactions = transactions.filter(transaction => {
+  //   const matchesSearch = transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     transaction.amount.includes(searchTerm);
+  //   const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
+  //   const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
+  //   return matchesSearch && matchesStatus && matchesType;
+  // });
 
   const navigate = useNavigate();
 
@@ -52,16 +52,17 @@ const TransactionMonitoring = () => {
     pending: 'warning',
     in_progress: 'info',
     completed: 'success',
+    refunded: 'secondary',
     error: 'error'
   };
 
   // Separate transactions into two groups
-  const pendingWithdrawals = filteredTransactions.filter(
-    t => t.paidAmount === 0
+  const pendingWithdrawals = transactions.filter(
+    t => t.transactionStatus === "PENDING"
   );
 
-  const processedTransactions = filteredTransactions.filter(
-    t => t.paidAmount > 0
+  const processedTransactions = transactions.filter(
+    t => t.transactionStatus !== "PENDING"
   );
 
   return (
@@ -112,7 +113,7 @@ const TransactionMonitoring = () => {
       </Box>
 
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom>New Withdrawal Requests</Typography>
+        <Typography variant="h6" gutterBottom>New Requests</Typography>
         <TableContainer>
           <Table>
             <TableHead>
@@ -123,32 +124,41 @@ const TransactionMonitoring = () => {
                 <TableCell>Bank</TableCell>
                 <TableCell>Acc</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Type</TableCell>
                 <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {pendingWithdrawals.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
-                  <TableCell>{transaction.customer.name}</TableCell>
-                  <TableCell>{transaction.amount}</TableCell>
-                  <TableCell>{transaction.bank}</TableCell>
-                  <TableCell>{transaction.account}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label="Pending"
-                      color={statusColor.pending}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
-                      <ActionIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {pendingWithdrawals.map((transaction) => {
+                let type = statusColor.pending;
+                if (transaction.transactionStatus === "PENDING") type = statusColor.in_progress;
+                if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
+                if (transaction.transactionStatus === "FAILED") type = statusColor.error;
+                if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                return (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{new Date().toLocaleString()}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.name}</TableCell>
+                    <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.bank}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.accountNumber}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={transaction.transactionStatus}
+                        color={type}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{transaction.transactionType}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
+                        <ActionIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -165,33 +175,43 @@ const TransactionMonitoring = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Type</TableCell>
                 <TableCell>By</TableCell>
                 <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {processedTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{transaction.id}</TableCell>
-                  <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
-                  <TableCell>{transaction.customer.name}</TableCell>
-                  <TableCell>{transaction.amount}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={transaction.status}
-                      color={statusColor[transaction.status]}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>Admin</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
-                      <ActionIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {processedTransactions.map((transaction) => {
+                let type = statusColor.pending;
+                if (transaction.transactionStatus === "PENDING") type = statusColor.in_progress;
+                if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
+                if (transaction.transactionStatus === "FAILED") type = statusColor.error;
+                if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                if (transaction.transactionStatus === "REFUNDED") type = statusColor.refunded;
+                return (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.id}</TableCell>
+                    <TableCell>{new Date().toLocaleString()}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.name}</TableCell>
+                    <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={transaction.transactionStatus}
+                        color={type}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{transaction.transactionType}</TableCell>
+                    <TableCell>Admin</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => navigate(`/transactions/${transaction.id}`)}>
+                        <ActionIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>

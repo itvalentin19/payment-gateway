@@ -22,6 +22,7 @@ import AddPackage from './features/admin/AddPackage';
 import AddClient from './features/admin/AddClient';
 import Transactions from './features/transactions/Transactions';
 import WithdrawalPage from './features/transactions/WithdrawalPage';
+import { ROLES } from './utilities/constants';
 
 function App() {
   return (
@@ -36,24 +37,25 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/" element={<DashboardPage />} />
-                  <Route path="/clients" element={<ProtectedRoute requiredRole="admin" />}>
+                  <Route path="/clients" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN} />}>
                     <Route index element={<ClientManagement />} />
                     <Route path="add-client" element={<AddClient />} />
                     <Route path="edit/:clientId" element={<AddClient />} />
                   </Route>
                   <Route path="/reports" element={<ReportPage />} />
-                  <Route path="/transactions" element={<ProtectedRoute requiredRole="admin" ><TransactionMonitoring /></ProtectedRoute>} />
-                  <Route path="/transactions/:transactionId" element={<ProtectedRoute requiredRole="admin"><TransactionDetails /></ProtectedRoute>} />
+                  <Route path="/transactions" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN} ><TransactionMonitoring /></ProtectedRoute>} />
+                  <Route path="/transactions/:transactionId" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN}><TransactionDetails /></ProtectedRoute>} />
                   <Route path="/api-docs" element={<ApiDocsPage />} />
                   <Route path="/account-management">
                     <Route index element={<AccountManagement />} />
                     <Route path="add-account" element={<AddAccount />} />
                     <Route path="edit-account/:accountId" element={<AddAccount />} />
-                    <Route path="add-package" element={<ProtectedRoute requiredRole="admin" ><AddPackage /></ProtectedRoute>} />
-                    <Route path="threshold-settings" element={<ProtectedRoute requiredRole="admin" ><ThresholdSetting /></ProtectedRoute>} />
+                    <Route path="add-package" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN} ><AddPackage /></ProtectedRoute>} />
+                    <Route path="edit-package/:packageId" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN} ><AddPackage /></ProtectedRoute>} />
+                    <Route path="threshold-settings" element={<ProtectedRoute requiredRole={ROLES.ROLE_ADMIN} ><ThresholdSetting /></ProtectedRoute>} />
                   </Route>
-                  <Route path="/profile" element={<ProtectedRoute requiredRole="user" ><ProfileSettings /></ProtectedRoute>} />
-                  <Route path="/user-transactions" element={<ProtectedRoute requiredRole="user" />}>
+                  <Route path="/profile" element={<ProtectedRoute requiredRole={ROLES.ROLE_CLIENT} ><ProfileSettings /></ProtectedRoute>} />
+                  <Route path="/user-transactions" element={<ProtectedRoute requiredRole={ROLES.ROLE_CLIENT} />}>
                     <Route index element={<Transactions />} />
                     <Route path="withdrawal" element={<WithdrawalPage />} />
                   </Route>

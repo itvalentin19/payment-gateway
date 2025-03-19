@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   Box,
   Paper,
@@ -12,7 +12,8 @@ import {
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateProfile } from './profileSlice';
+import { clearError, fetchProfile, setUser, updateProfile } from './profileSlice';
+import { fetchClients, selectClientById } from '../admin/clientsSlice';
 
 const ProfileSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
@@ -32,8 +33,38 @@ const ProfileSchema = Yup.object().shape({
 
 const ProfileSettings = () => {
   const dispatch = useDispatch();
+  const { userId } = useSelector((state) => state.auth);
   const { user, loading, error } = useSelector((state) => state.profile);
   const [successMessage, setSuccessMessage] = useState('');
+  const client = useSelector(state => useId ? selectClientById(state, parseInt(userId)) : null);
+  const formik = useRef();
+
+  useEffect(() => {
+    if (client) {
+      dispatch(setUser(client))
+    } else {
+      dispatch(fetchClients());
+    }
+  }, [client]);
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        dispatch(clearError());
+      }, 3000);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (formik.current && user) {
+      formik.current.setFieldValue('name', user.name);
+      formik.current.setFieldValue('email', user.email);
+    }
+  }, [user, formik]);
+
+  useEffect(() => {
+    dispatch(fetchProfile(userId));
+  }, [dispatch, userId]);
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
@@ -53,17 +84,10 @@ const ProfileSettings = () => {
       <Typography variant="h4" gutterBottom>Profile Settings</Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {successMessage && <Alert severity="success" /* `ProfileSettings` is a component that likely
-      displays and allows users to manage their profile
-      settings. This component is rendered in the route
-      path "/profile" within the application. It may
-      include features such as updating user
-      information, changing passwords, managing
-      preferences, or any other profile-related
-      functionalities. */
-        sx={{ mb: 2 }}>{successMessage}</Alert>}
+      {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
 
       <Formik
+        ref={formik}
         initialValues={{
           name: user?.name || '',
           email: user?.email || '',
@@ -119,7 +143,7 @@ const ProfileSettings = () => {
                     margin="normal"
                     label="Package"
                     name="package"
-                    value={user?.package || ''}
+                    value={user?.packageDTO?.packageTier || ''}
                     InputProps={{
                       readOnly: true,
                     }}

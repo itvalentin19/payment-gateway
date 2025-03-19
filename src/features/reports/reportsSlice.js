@@ -1,20 +1,51 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
+
+export const fetchReports = createAsyncThunk('reports/fetchReports', async (requestBody) => {
+  try {
+    const response = await apiClient.post(ENDPOINTS.QUERY_TRANSACTIONS, requestBody);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Loading Reports failed');
+  }
+});
 
 const initialState = {
-  reports: [
-    { id: 1, date: '2024-03-01', name: 'Daily Summary', funds: '$15,000', type: 'Daily', status: 'Completed' },
-    { id: 2, date: '2024-03-08', name: 'Weekly Analysis', funds: '$105,000', type: 'Weekly', status: 'Pending' },
-    { id: 3, date: '2024-03-15', name: 'Monthly Overview', funds: '$450,000', type: 'Monthly', status: 'Processing' },
-    { id: 4, date: '2024-03-02', name: 'Daily Transactions', funds: '$18,500', type: 'Daily', status: 'Completed' },
-    { id: 5, date: '2024-03-09', name: 'Weekly Audit', funds: '$98,000', type: 'Weekly', status: 'Completed' },
-    { id: 6, date: '2024-03-16', name: 'Monthly Financials', funds: '$520,000', type: 'Monthly', status: 'Pending' },
-  ],
+  reports: [],
+  query: {
+    page: 1,
+    size: 10,
+  },
+  pagination: null,
 };
 
 const reportsSlice = createSlice({
   name: 'reports',
   initialState,
-  reducers: {},
+  reducers: {
+    setQuery: (state, action) => {
+      state.query = action.payload;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchReports.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchReports.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        let data = action.payload.data;
+        state.reports = data.content;
+        delete data.content;
+        state.pagination = data;
+      })
+      .addCase(fetchReports.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
+  }
 });
 
+export const { setQuery } = reportsSlice.actions;
 export default reportsSlice.reducer;

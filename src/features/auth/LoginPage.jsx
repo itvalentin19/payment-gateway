@@ -14,7 +14,7 @@ import { login } from './authSlice';
 import { updateProfile } from '../profile/profileSlice';
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string()
+  username: Yup.string()
     .email('Invalid email')
     .required('Required'),
   password: Yup.string()
@@ -52,7 +52,7 @@ const LoginPage = () => {
         </Typography>
         
         <Formik
-          initialValues={{ email: '', password: '' }}
+          initialValues={{ username: '', password: '' }}
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
         >
@@ -70,7 +70,7 @@ const LoginPage = () => {
                 fullWidth
                 margin="normal"
                 label="Email"
-                name="email"
+                name="username"
                 type="email"
                 variant="outlined"
                 value={values.email}

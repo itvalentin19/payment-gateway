@@ -2,7 +2,24 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemText, Box, CssBaseline } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  CssBaseline,
+  Backdrop,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Modal,
+  Button
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -12,16 +29,38 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { useSelector } from 'react-redux';
 import { logout } from '../../src/features/auth/authSlice';
+import { selectLoading, selectToast, hideToast, hideModal, selectModal } from '../features/ui/uiSlice';
+import { ENDPOINTS, ROLES } from '../utilities/constants';
+import { apiClient } from '../utilities/api';
 
 const drawerWidth = 240;
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+  zIndex: 1,
+};
 
-const Layout = ({ children }) => {
+const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { role } = useSelector((state) => state.auth);
+  const { roles } = useSelector((state) => state.auth);
+  const loading = useSelector(selectLoading);
+  const toast = useSelector(selectToast);
+  const modal = useSelector(selectModal);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiClient.post(ENDPOINTS.LOGOUT_USER);
+    } catch (error) {
+      console.log(error);
+    }
     dispatch(logout());
     navigate('/login');
   };
@@ -29,6 +68,10 @@ const Layout = ({ children }) => {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  const handleCloseModal = () => {
+    dispatch(hideModal());
+  }
 
   const adminNavItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -48,7 +91,7 @@ const Layout = ({ children }) => {
     { text: 'API Documentation', icon: <DescriptionIcon />, path: '/api-docs' },
   ];
 
-  const navItems = role === 'admin' ? adminNavItems : clientNavItems;
+  const navItems = roles?.includes(ROLES.ROLE_ADMIN) ? adminNavItems : clientNavItems;
 
   const drawer = (
     <div style={{ padding: 20 }}>
@@ -61,7 +104,7 @@ const Layout = ({ children }) => {
         >
           <PersonOutlineIcon sx={{ color: '#4F378A' }} />
         </IconButton>
-        <Typography>{role === 'admin' ? 'Admin' : 'User'}</Typography>
+        <Typography>{roles?.includes(ROLES.ROLE_ADMIN) ? 'Admin' : 'User'}</Typography>
       </Toolbar>
       <List>
         {navItems.map((item) => (
@@ -169,6 +212,48 @@ const Layout = ({ children }) => {
       >
         <Outlet />
       </Box>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <Snackbar
+        open={toast.show}
+        autoHideDuration={6000}
+        onClose={() => dispatch(hideToast())}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          severity={toast.type}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+
+      <Modal
+        open={modal.show}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalStyle}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            {modal.title}
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            {modal.description}
+          </Typography>
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button color="error" onClick={handleCloseModal}>{modal.cancelText}</Button>
+            <Button color="success" onClick={() => modal.action()}>{modal.actionText}</Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };

@@ -2,27 +2,64 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { apiClient } from '../../utilities/api';
+import { setLoading, showToast } from '../ui/uiSlice';
+import { ENDPOINTS } from '../../utilities/constants';
+import { selectPackageById, updatePackage } from './packagesSlice';
 
 const validationSchema = Yup.object({
-  packageId: Yup.string().required('Required'),
-  tier: Yup.string().required('Required'),
-  serviceFee: Yup.number().required('Required').positive('Must be positive'),
+  packageTier: Yup.string().required('Required'),
+  commissionRate: Yup.number().required('Required').positive('Must be positive'),
   requirement: Yup.string().required('Required'),
 });
 
 const AddPackage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { packageId } = useParams();
+  const isEditMode = !!packageId;
+
+  const { packages } = useSelector(state => state.packages);
+  const pkg = useSelector(state =>
+    packageId ? selectPackageById(state, parseInt(packageId)) : null
+  );
+
+
   const formik = useFormik({
     initialValues: {
-      packageId: '',
-      tier: '',
-      serviceFee: '',
-      requirement: '',
+      packageTier: pkg ? pkg.packageTier : 'Basic',
+      commissionRate: pkg ? pkg.commissionRate : '',
+      requirement: pkg ? pkg.requirement : '',
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       console.log('Form submitted:', values);
       // Handle form submission here
+      dispatch(setLoading(true));
+      try {
+        let res;
+        if (!packageId) {
+          res = await apiClient.post(ENDPOINTS.CREATE_PACKAGE, values);
+        } else {
+          res = await apiClient.put(ENDPOINTS.UPDATE_PACKAGES, { ...values, id: packageId });
+        }
+
+        if (res.status === 200) {
+          dispatch(updatePackage(res.data));
+        }
+
+        dispatch(setLoading(false));
+        navigate("/account-management");
+      } catch (error) {
+        console.log(error);
+        dispatch(setLoading(false));
+        dispatch(showToast({
+          message: error.message,
+          type: 'error'
+        }))
+      }
     },
   });
 
@@ -38,7 +75,7 @@ const AddPackage = () => {
         justifyContent: 'center'
       }}>
         <Typography variant="h4" gutterBottom align="center">
-          Create New Package
+          {isEditMode ? "Edit Package" : "Create New Package"}
         </Typography>
 
         <form onSubmit={formik.handleSubmit} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -51,18 +88,19 @@ const AddPackage = () => {
                 <Grid2 item columns={9}>
                   <TextField
                     fullWidth
-                    id="tier"
-                    name="tier"
+                    id="packageTier"
+                    name="packageTier"
                     select
-                    value={formik.values.tier}
+                    value={formik.values.packageTier}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    error={formik.touched.tier && Boolean(formik.errors.tier)}
-                    helperText={formik.touched.tier && formik.errors.tier}
+                    error={formik.touched.packageTier && Boolean(formik.errors.packageTier)}
+                    helperText={formik.touched.packageTier && formik.errors.packageTier}
                   >
-                    <MenuItem value="Tier 1">Tier 1</MenuItem>
-                    <MenuItem value="Tier 2">Tier 2</MenuItem>
-                    <MenuItem value="Tier 3">Tier 3</MenuItem>
+                    <MenuItem value="Package 1">Package 1</MenuItem>
+                    <MenuItem value="Package 2">Package 2</MenuItem>
+                    <MenuItem value="Package 3">Package 3</MenuItem>
+                    <MenuItem value="Basic">Basic</MenuItem>
                   </TextField>
                 </Grid2>
               </Grid2>
@@ -76,14 +114,14 @@ const AddPackage = () => {
                 <Grid2 item columns={9}>
                   <TextField
                     fullWidth
-                    id="serviceFee"
-                    name="serviceFee"
+                    id="commissionRate"
+                    name="commissionRate"
                     type="number"
-                    value={formik.values.serviceFee}
+                    value={formik.values.commissionRate}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    error={formik.touched.serviceFee && Boolean(formik.errors.serviceFee)}
-                    helperText={formik.touched.serviceFee && formik.errors.serviceFee}
+                    error={formik.touched.commissionRate && Boolean(formik.errors.commissionRate)}
+                    helperText={formik.touched.commissionRate && formik.errors.commissionRate}
                   />
                 </Grid2>
               </Grid2>

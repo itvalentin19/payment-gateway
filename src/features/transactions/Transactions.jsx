@@ -29,10 +29,15 @@ import { DataGrid } from '@mui/x-data-grid';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
+import { fetchAccounts, selectAccount } from '../admin/accountsSlice';
+import { selectClientById } from '../admin/clientsSlice';
 
 const Transactions = () => {
   const dispatch = useDispatch();
-  const { transactions, balance } = useSelector((state) => state.transactions);
+  const { userId } = useSelector((state) => state.auth);
+  const { accounts } = useSelector((state) => state.accounts);
+  const user = useSelector((state) => userId ? selectClientById(state, userId) : null);
+  const { transactions, query } = useSelector((state) => state.transactions);
   const [selectedAccount, setSelectedAccount] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -48,6 +53,7 @@ const Transactions = () => {
 
   const handleAccountSelect = (accountId) => {
     setSelectedAccount(accountId);
+    dispatch(selectAccount(accountId));
   };
 
   const isCancellable = (transactionDate) => {
@@ -60,27 +66,16 @@ const Transactions = () => {
     console.log('Canceling transaction:', transactionId);
     // Example: dispatch(cancelTransaction(transactionId));
   };
-  const paymentAccounts = [
-    { id: 1, name: 'Account 1', bank: 'Alipay', account: '123456', token: '*****' },
-    { id: 2, name: 'Account 2', bank: 'Alipay', account: '346346', token: '*****' },
-  ];
 
   useEffect(() => {
-    dispatch(fetchTransactions());
+    dispatch(fetchAccounts());
+    dispatch(fetchTransactions(query));
     dispatch(fetchBalance());
   }, [dispatch]);
 
   useEffect(() => {
     dispatch(addTransactions(transactions))
   }, [dispatch, transactions]);
-
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.amount.includes(searchTerm);
-    const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
-    const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
 
   const navigate = useNavigate();
 
@@ -91,14 +86,7 @@ const Transactions = () => {
     error: 'error'
   };
 
-  // Separate transactions into two groups
-  const pendingWithdrawals = filteredTransactions.filter(
-    t => t.paidAmount === 0
-  );
-
-  const processedTransactions = filteredTransactions.filter(
-    t => t.paidAmount > 0
-  );
+  const totalBalance = accounts.reduce((sum, acc) => sum + acc.accountBalance, 0);
 
   return (
     <Box sx={{ p: 3 }} elevation={0}>
@@ -113,10 +101,10 @@ const Transactions = () => {
         size="small"
       />
       <Typography variant="h6" gutterBottom>
-        Balance: ${balance?.balance ?? 0}
+        Balance: ${totalBalance ?? 0}
       </Typography>
       <Typography variant="h6" gutterBottom>
-        T1-Commission: {balance?.commission ?? 0}%
+        T1-Commission: {user?.packageDTO?.commissionRate ?? 0}%
       </Typography>
 
       <Box sx={{ mb: 4, mt: 2 }}>
@@ -136,12 +124,12 @@ const Transactions = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paymentAccounts.map((account) => (
+              {accounts?.map((account) => (
                 <TableRow key={account.id}>
                   <TableCell>{account.id}</TableCell>
                   <TableCell>{account.name}</TableCell>
                   <TableCell>{account.bank}</TableCell>
-                  <TableCell>{account.account}</TableCell>
+                  <TableCell>{account.accountNumber}</TableCell>
                   <TableCell>{account.token}</TableCell>
                   <TableCell>
                     <Radio
@@ -175,51 +163,30 @@ const Transactions = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{transaction.id}</TableCell>
-                  <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
-                  <TableCell>{transaction.bank}</TableCell>
-                  <TableCell>{transaction.account}</TableCell>
-                  <TableCell>${transaction.amount}</TableCell>
-                  <TableCell>{
-                    isCancellable(transaction.date) ?
-                      <Button
-                        id="demo-customized-button"
-                        aria-controls={open ? 'demo-customized-menu' : undefined}
-                        aria-haspopup="true"
-                        aria-expanded={open ? 'true' : undefined}
-                        variant="contained"
-                        disableElevation
-                        onClick={handleClick}
-                        endIcon={<KeyboardArrowDownIcon />}
-                      >
-                        Pending
-                      </Button>
-                      :
-                      transaction.cancelled ?
-                        <Button
-                          variant="contained"
-                          color="error"
-                          disabled={!isCancellable(transaction.date)}
-                          onClick={() => handleCancel(transaction.id)}
-                        >
-                          Cancelled
-                        </Button>
-                        :
-                        <Button
-                          variant="text"
-                          color={statusColor.in_progress}
-                        >
-                          {
-                            transaction.amount === transaction.paidAmount ? "Completed" : "In Progress"
-                          }
-                        </Button>
-                  }
-
-                  </TableCell>
-                </TableRow>
-              ))}
+              {transactions.map((transaction) => {
+                let type = statusColor.pending;
+                if (transaction.transactionStatus === "PENDING") type = statusColor.in_progress;
+                if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
+                if (transaction.transactionStatus === "FAILED") type = statusColor.error;
+                if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                return (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.id}</TableCell>
+                    <TableCell>{new Date(transaction.createDate).toLocaleString()}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.bank}</TableCell>
+                    <TableCell>{transaction.transactionAccount?.accountNumber}</TableCell>
+                    <TableCell>${transaction.amount}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={transaction.transactionStatus}
+                        color={type}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </TableContainer>

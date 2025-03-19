@@ -1,62 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
 
-export const fetchTransactions = createAsyncThunk('transactions/fetchTransactions', async () => {
-  // Simulated API call
-  return new Promise((resolve) =>
-    setTimeout(() => resolve([
-      {
-        id: 1,
-        date: new Date(),
-        reference: 'TX-001',
-        amount: '150.00',
-        currency: 'USD',
-        status: 'completed',
-        type: 'withdrawal',
-        bank: 'OCBC',
-        account: '909292929292929',
-        customer: { name: 'Customer One' },
-        subPayments: [],
-        cancelled: false,
-        paidAmount: 0
-      },
-      {
-        id: 2,
-        date: '2025-03-02',
-        reference: 'TX-002',
-        amount: '75.50',
-        currency: 'EUR',
-        status: 'pending',
-        type: 'withdrawal',
-        bank: 'HSBC',
-        account: '1284399333333',
-        customer: { name: 'Customer Two' },
-        subPayments: [],
-        cancelled: true,
-        paidAmount: 0
-      },
-      {
-        id: 3,
-        date: '2025-03-03',
-        reference: 'TX-003',
-        amount: '200.00',
-        currency: 'GBP',
-        status: 'failed',
-        type: 'withdrawal',
-        bank: 'OCBC',
-        account: '02938192929924',
-        customer: { name: 'Customer Three' },
-        subPayments: [
-          {
-            id: "2389wi29",
-            amount: 50,
-            date: new Date().toISOString()
-          }
-        ],
-        cancelled: false,
-        paidAmount: 100
-      }
-    ]), 1000)
-  );
+export const fetchTransactions = createAsyncThunk('transactions/fetchTransactions', async (requestBody) => {
+   try {
+     const response = await apiClient.post(ENDPOINTS.QUERY_TRANSACTIONS, requestBody);
+     return response.data;
+   } catch (error) {
+     throw new Error(error.response?.data?.message || 'Loading Transactions failed');
+   }
 });
 
 export const fetchBalance = createAsyncThunk('transactions/fetchBalance', async () => {
@@ -72,6 +24,12 @@ export const fetchBalance = createAsyncThunk('transactions/fetchBalance', async 
 
 const initialState = {
   transactions: [],
+  query: {
+    page: 1,
+    size: 10,
+  },
+  selected: null,
+  pagination: null,
   balance: null,
   status: 'idle',
   error: null
@@ -115,6 +73,9 @@ const transactionsSlice = createSlice({
     },
     addTransactions: (state, action) => {
       state.transactions = action.payload;
+    },
+    setSelectedTransaction: (state, action) => {
+      state.selected = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -124,7 +85,10 @@ const transactionsSlice = createSlice({
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.transactions = action.payload;
+        let data = action.payload.data;
+        state.transactions = data.content;
+        delete data.content;
+        state.pagination = data;
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.status = 'failed';
@@ -137,6 +101,6 @@ const transactionsSlice = createSlice({
   }
 });
 
-export const { addSubPayment, addTransactions } = transactionsSlice.actions;
+export const { addSubPayment, addTransactions, setSelectedTransaction } = transactionsSlice.actions;
 
 export default transactionsSlice.reducer;

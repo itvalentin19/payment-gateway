@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Grid2,
   Paper,
@@ -11,7 +11,8 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Chip
 } from '@mui/material';
 import {
   AccountBalance as BalanceIcon,
@@ -20,25 +21,90 @@ import {
   AccountBalanceWallet as DepositIcon,
   MoneyOff as WithdrawalIcon
 } from '@mui/icons-material';
+import { ENDPOINTS, ROLES } from '../../utilities/constants';
+import { addTransactions, fetchTransactions } from '../transactions/transactionsSlice';
+import { fetchClients } from '../admin/clientsSlice';
+import { setLoading, showToast } from '../ui/uiSlice';
+import { apiClient } from '../../utilities/api';
 
 const DashboardPage = () => {
-  const { role } = useSelector((state) => state.auth);
-  const [tabValue, setTabValue] = useState(0);
+  const dispatch = useDispatch();
+  const { roles } = useSelector((state) => state.auth);
+  const [tabValue, setTabValue] = useState('today');
+  const { transactions, pagination } = useSelector(state => state.transactions);
+  const { clients } = useSelector(state => state.clients);
+  const [totalDeposit, setTotalDeposit] = useState(0);
+  const [totalWithdrawal, setTotalWithdrawal] = useState(0);
+  const [transactionCount, setTransactionCount] = useState(0);
 
   const stats = [
     {
-      title: role === 'admin' ? 'Total Transactions' : 'Your Transactions',
-      value: '2,845',
+      title: roles?.includes(ROLES.ROLE_ADMIN) ? 'Total Transactions' : 'Your Transactions',
+      value: transactionCount,
       icon: <TransactionsIcon fontSize="large" />,
       color: '#1976d2'
     },
     {
-      title: role === 'admin' ? 'Active Clients' : 'Account Balance',
-      value: role === 'admin' ? '143' : '$12,450.00',
-      icon: role === 'admin' ? <ClientsIcon fontSize="large" /> : <BalanceIcon fontSize="large" />,
+      title: roles?.includes(ROLES.ROLE_ADMIN) ? 'Active Clients' : 'Account Balance',
+      value: roles?.includes(ROLES.ROLE_ADMIN) ? clients?.length : totalDeposit,
+      icon: roles?.includes(ROLES.ROLE_ADMIN) ? <ClientsIcon fontSize="large" /> : <BalanceIcon fontSize="large" />,
       color: '#4caf50'
     },
   ];
+
+  useEffect(() => {
+    fetchData();
+  }, [dispatch, tabValue]);
+
+  useEffect(() => {
+    dispatch(fetchClients());
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      dispatch(setLoading(true));
+      let res;
+      res = await apiClient.get(ENDPOINTS.GET_TRANSACTION_DASHBOARD + tabValue);
+      if (res.status === 200) {
+        console.log("res.data");
+        console.log(res.data);
+        
+        dispatch(addTransactions(res.data.recentTransactions));
+        setTotalDeposit(res.data.totalDeposit);
+        setTotalWithdrawal(res.data.totalWithdrawal);
+        setTransactionCount(res.data.transactionCount);
+      } else {
+        dispatch(showToast({
+          message: res.data.message || res.message || "Failed to load data!",
+          type: 'error'
+        }))
+      }
+      dispatch(setLoading(false));
+    } catch (error) {
+      let message;
+      if (error.response && error.response.data) {
+        message = error.response.data.message;
+      } else {
+        message = error.message;
+      }
+
+      dispatch(setLoading(false));
+      dispatch(showToast({
+        message: message || "Something went wrong!",
+        type: 'error'
+      }))
+    }
+  }
+
+
+  const statusColor = {
+    pending: 'warning',
+    in_progress: 'info',
+    completed: 'success',
+    refunded: 'secondary',
+    error: 'error'
+  };
+
 
   return (
     <Grid2 container spacing={3}>
@@ -46,9 +112,9 @@ const DashboardPage = () => {
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h4">Overview</Typography>
           <Tabs value={tabValue} onChange={(e, newVal) => setTabValue(newVal)} sx={{ '& .MuiTab-root': { p: { sm: 2, xs: 1 }, minWidth: { sm: '90px', xs: 'auto' } } }}>
-            <Tab label="Monthly" />
-            <Tab label="Weekly" />
-            <Tab label="Today" />
+            <Tab label="Monthly" value={'monthly'} />
+            <Tab label="Weekly" value={'weekly'} />
+            <Tab label="Today" value='today' />
           </Tabs>
         </Box>
       </Grid2>
@@ -75,7 +141,7 @@ const DashboardPage = () => {
               <Typography variant="h6" color="textSecondary">
                 Total Deposit
               </Typography>
-              <Typography variant="h4">$24,500.00</Typography>
+              <Typography variant="h4">${totalDeposit}</Typography>
             </div>
           </Paper>
         </Grid2>
@@ -99,7 +165,7 @@ const DashboardPage = () => {
               <Typography variant="h6" color="textSecondary">
                 Total Withdrawal
               </Typography>
-              <Typography variant="h4">$18,230.00</Typography>
+              <Typography variant="h4">${totalWithdrawal}</Typography>
             </div>
           </Paper>
         </Grid2>
@@ -142,7 +208,7 @@ const DashboardPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                {role === 'admin' ? (
+                {roles?.includes(ROLES.ROLE_ADMIN) ? (
                   <>
                     <TableCell>Date</TableCell>
                     <TableCell>Amount</TableCell>
@@ -164,29 +230,50 @@ const DashboardPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {[1, 2, 3].map((row) => (
-                <TableRow key={row}>
-                  {role === 'admin' ? (
-                    <>
-                      <TableCell>2025-03-0{row}</TableCell>
-                      <TableCell>${row}500.00</TableCell>
-                      <TableCell>Deposit</TableCell>
-                      <TableCell>REF{row}2345</TableCell>
-                      <TableCell>Completed</TableCell>
-                    </>
-                  ) : (
-                    <>
-                      <TableCell>TXID{row}234</TableCell>
-                      <TableCell>2025-03-0{row}</TableCell>
-                      <TableCell>${row}200.00</TableCell>
-                      <TableCell>Bank of America</TableCell>
-                      <TableCell>******{row}2345</TableCell>
-                      <TableCell>Withdrawal</TableCell>
-                      <TableCell>Pending</TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
+              {transactions?.map((transaction) => {
+                let type = statusColor.pending;
+                if (transaction.transactionStatus === "PENDING") type = statusColor.in_progress;
+                if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
+                if (transaction.transactionStatus === "FAILED") type = statusColor.error;
+                if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                return (
+                  <TableRow key={transaction.orderId}>
+                    {roles?.includes(ROLES.ROLE_ADMIN) ? (
+                      <>
+                        <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
+                        <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                        <TableCell>{transaction.transactionType}</TableCell>
+                        <TableCell>{transaction.orderId}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={transaction.transactionStatus}
+                            color={type}
+                            variant="outlined"
+                            size="small"
+                          />
+                        </TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell>{transaction.orderId}</TableCell>
+                        <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
+                        <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                        <TableCell>{transaction.transactionAccount?.bank}</TableCell>
+                        <TableCell>******{transaction.transactionAccount?.accountNumber.substring(5)}</TableCell>
+                        <TableCell>{transaction.transactionType}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={transaction.transactionStatus}
+                            color={type}
+                            variant="outlined"
+                            size="small"
+                          />
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </Paper>

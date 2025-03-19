@@ -1,23 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
 
 export const login = createAsyncThunk('auth/login', async (credentials) => {
-  // Actual API call would go here
-  return new Promise((resolve) =>
-    setTimeout(() => resolve({
-      accessToken: 'dummy-access-token',
-      refreshToken: 'dummy-refresh-token',
-      role: credentials?.email?.includes('admin') ? 'admin' : 'user'
-    }), 1000)
-  );
+  try {
+    const response = await apiClient.post(ENDPOINTS.LOGIN, credentials);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Login failed');
+  }
 });
 
 const initialState = {
   isAuthenticated: false,
-  role: null,
-  accessToken: null,
+  token: null,
   refreshToken: null,
+  expiresIn: null,
+  type: "Bearer",
+  id: null,
+  userId: null,
+  email: null,
+  roles: null, // array of roles
   loading: false,
   error: null
 };
@@ -28,9 +33,15 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.isAuthenticated = false;
-      state.role = null;
-      state.accessToken = null;
+      state.token = null;
       state.refreshToken = null;
+      state.expiresIn = null;
+      state.type = null;
+      state.id = null;
+      state.userId = null;
+      state.email = null;
+      state.roles = null;
+      localStorage.removeItem('accessToken');
     }
   },
   extraReducers: (builder) => {
@@ -41,14 +52,22 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        state.role = action.payload.role;
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
         state.loading = false;
+        state.token = action.payload.token;
+        state.refreshToken = action.payload.refreshToken;
+        state.expiresIn = action.payload.expiresIn;
+        state.type = action.payload.type;
+        state.id = action.payload.id;
+        state.userId = action.payload.userId;
+        state.email = action.payload.email;
+        state.roles = action.payload.roles;
+        localStorage.setItem('accessToken', action.payload.token);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.token = null;
+        state.refreshToken = null;
       });
   }
 });
@@ -56,7 +75,6 @@ const authSlice = createSlice({
 const persistConfig = {
   key: 'auth',
   storage,
-  // whitelist: ['isAuthenticated', 'role', 'accessToken', 'refreshToken']
 };
 
 export const { logout } = authSlice.actions;

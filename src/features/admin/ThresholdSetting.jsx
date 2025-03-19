@@ -1,31 +1,52 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem, Divider } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
+import { selectAccount, updateAccount } from './accountsSlice';
+import { setLoading, showToast } from '../ui/uiSlice';
 
 const ThresholdSetting = () => {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [maxDaily, setMaxDaily] = useState('');
   const [maxMonthly, setMaxMonthly] = useState('');
+  const { accounts, selected } = useSelector(state => state.accounts);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // Temporary data - will connect to Redux later
-  const accounts = [
-    {
-      id: 1,
-      name: 'Account 1',
-      bank: 'Alipay',
-      account: '123456',
-      maxDaily: 50000,
-      maxMonthly: 1000000
+  const handleSave = async () => {
+    const updateAcc = {
+      id: selectedAccount,
+      maxDailyTransaction: parseInt(maxDaily),
+      maxMonthlyTransaction: parseInt(maxMonthly)
     }
-  ];
-
-  const handleSave = () => {
-    // Save logic here
-    console.log('Saving thresholds:', {
-      accountId: selectedAccount,
-      maxDaily,
-      maxMonthly
-    });
+    if (selectedAccount && (selectedAccount.maxDailyTransaction !== parseInt(maxDaily) || selectedAccount.maxMonthlyTransaction !== parseInt(maxMonthly))) {
+      try {
+        dispatch(setLoading(true))
+        const res = await apiClient.put(ENDPOINTS.UPDATE_ACCOUNT, updateAcc);
+        if (res.status === 200) {
+          dispatch(updateAccount(updateAcc));
+          dispatch(showToast({
+            message: 'Account Updated!',
+            type: 'success'
+          }));
+        } else {
+          dispatch(showToast({
+            message: res.data.message || res.message || "Something went wrong!",
+            type: 'error'
+          }));
+        }
+        dispatch(setLoading(false));
+        navigate('/account-management');
+      } catch (error) {
+        dispatch(setLoading(false))
+        dispatch(showToast({
+          message: error.message || "Something went wrong!",
+          type: 'error'
+        }));
+      }
+    }
   };
 
   return (
@@ -60,18 +81,42 @@ const ThresholdSetting = () => {
                         select
                         value={selectedAccount}
                         onChange={(e) => {
-                          const account = accounts.find(a => a.id === e.target.value);
+                          const account = accounts?.find(a => a.id === e.target.value);
                           setSelectedAccount(e.target.value);
-                          setMaxDaily(account?.maxDaily || '');
-                          setMaxMonthly(account?.maxMonthly || '');
+                          dispatch(selectAccount(e.target.value))
+                          setMaxDaily(account?.maxDailyTransaction || '');
+                          setMaxMonthly(account?.maxMonthlyTransaction || '');
+                        }}
+                        sx={{ minWidth: 200 }}
+                        slotProps={{
+                          select: {
+                            displayEmpty: true,
+                            label: 'Select Account',
+                          }
                         }}
                       >
-                        {accounts.map((account) => (
+                        {accounts?.map((account) => (
                           <MenuItem key={account.id} value={account.id}>
-                            {account.name} ({account.bank} - {account.account})
+                            {account.name}
                           </MenuItem>
                         ))}
                       </TextField>
+                    </Grid2>
+                  </Grid2>
+                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4} sx={{ mt: 2 }}>
+                    <Grid2 columns={3}>
+                      <Typography variant="subtitle1">Bank:</Typography>
+                    </Grid2>
+                    <Grid2 columns={9}>
+                      <Typography variant="subtitle1">{selected?.bank}</Typography>
+                    </Grid2>
+                  </Grid2>
+                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4} sx={{ mt: 2 }}>
+                    <Grid2 columns={3}>
+                      <Typography variant="subtitle1">Account:</Typography>
+                    </Grid2>
+                    <Grid2 columns={9}>
+                      <Typography variant="subtitle1">{selected?.accountNumber}</Typography>
                     </Grid2>
                   </Grid2>
                 </Grid2>
@@ -121,19 +166,19 @@ const ThresholdSetting = () => {
             <Grid2 item columns={12} sx={{ mt: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                 <Button
-                  variant="contained"
-                  onClick={handleSave}
-                  sx={{ width: 120 }}
-                >
-                  Save
-                </Button>
-                <Button
                   variant="outlined"
                   component={Link}
                   to="/account-management"
                   sx={{ width: 120 }}
                 >
                   Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSave}
+                  sx={{ width: 120 }}
+                >
+                  Save
                 </Button>
               </Box>
             </Grid2>

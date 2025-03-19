@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
 
 export const fetchClients = createAsyncThunk('clients/fetchClients', async () => {
-  // Simulated API call
-  return new Promise((resolve) => 
-    setTimeout(() => resolve([
-      { id: 1, name: 'Client One', email: 'client1@example.com', active: true, lastActive: '2025-03-01' },
-      { id: 2, name: 'Client Two', email: 'client2@example.com', active: false, lastActive: '2025-02-15' },
-      { id: 3, name: 'Client Three', email: 'client3@example.com', active: true, lastActive: '2025-03-05' }
-    ]), 1000)
-  );
+  try {
+    const response = await apiClient.get(ENDPOINTS.GET_CLIENTS);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Loading Clients failed');
+  }
 });
 
 const initialState = {
@@ -49,5 +49,5 @@ const clientsSlice = createSlice({
 
 export const { addClient, updateClient } = clientsSlice.actions;
 export const selectClientById = (state, clientId) => 
-  state.clients.clients.find(client => client.id === clientId);
+  state.clients.clients.find(client => client.id === parseInt(clientId));
 export default clientsSlice.reducer;
