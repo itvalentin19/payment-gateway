@@ -12,23 +12,23 @@ import {
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearError, fetchProfile, setUser, updateProfile } from './profileSlice';
+import { changePassword, clearError, fetchProfile, setUser, updateProfile } from './profileSlice';
 import { fetchClients, selectClientById } from '../admin/clientsSlice';
 
 const ProfileSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
   email: Yup.string().email('Invalid email').required('Required'),
-  currentPassword: Yup.string().when('newPassword', {
-    is: (val) => val && val.length > 0,
-    then: Yup.string().required('Current password is required'),
-  }),
-  newPassword: Yup.string().min(8, 'Too short!'),
-  confirmPassword: Yup.string().when('newPassword', {
-    is: (val) => val && val.length > 0,
-    then: Yup.string()
-      .required('Required')
-      .oneOf([Yup.ref('newPassword')], 'Passwords must match'),
-  }),
+});
+
+const ProfileSchema2 = Yup.object({
+  username: Yup.string().email('Invalid email').required('Required'),
+  currentPassword: Yup.string(),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Required'),
+  matchingPassword: Yup.string()
+    .oneOf([Yup.ref('password'), null], 'Passwords must match')
+    .required('Required'),
 });
 
 const ProfileSettings = () => {
@@ -38,6 +38,7 @@ const ProfileSettings = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const client = useSelector(state => useId ? selectClientById(state, parseInt(userId)) : null);
   const formik = useRef();
+  const formik2 = useRef();
 
   useEffect(() => {
     if (client) {
@@ -57,6 +58,7 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     if (formik.current && user) {
+      formik.current.setFieldValue('id', user.id);
       formik.current.setFieldValue('name', user.name);
       formik.current.setFieldValue('email', user.email);
     }
@@ -79,6 +81,19 @@ const ProfileSettings = () => {
     }
   };
 
+  const handleSubmitForChangePassword = async (values, { setSubmitting, resetForm }) => {
+    try {
+      await dispatch(changePassword(values)).unwrap();
+      setSuccessMessage('Password updated successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      resetForm({ values });
+    } catch (error) {
+      console.error('Update failed:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Paper sx={{ p: 3 }} elevation={0}>
       <Typography variant="h4" gutterBottom>Profile Settings</Typography>
@@ -86,30 +101,29 @@ const ProfileSettings = () => {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
 
-      <Formik
-        ref={formik}
-        initialValues={{
-          name: user?.name || '',
-          email: user?.email || '',
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        }}
-        validationSchema={ProfileSchema}
-        onSubmit={handleSubmit}
-      >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          isSubmitting,
-        }) => (
-          <form onSubmit={handleSubmit}>
-            <Grid2 container spacing={3}>
-              <Grid2 item size={{ xs: 12, md: 6 }}>
+      <Grid2 container spacing={3}>
+        <Grid2 item size={{ xs: 12, md: 6 }}>
+          <Formik
+            key={'name-email-formik'}
+            ref={formik}
+            initialValues={{
+              id: user?.id || '',
+              name: user?.name || '',
+              email: user?.email || '',
+            }}
+            validationSchema={ProfileSchema}
+            onSubmit={handleSubmit}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              isSubmitting,
+            }) => (
+              <form onSubmit={handleSubmit}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Account Information</Typography>
 
@@ -149,9 +163,47 @@ const ProfileSettings = () => {
                     }}
                   />
                 </Paper>
-              </Grid2>
-
-              <Grid2 item size={{ xs: 12, md: 6 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={isSubmitting}
+                    sx={{ width: 200 }}
+                  >
+                    {isSubmitting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </Button>
+                </Box>
+              </form>
+            )}
+          </Formik>
+        </Grid2>
+        <Grid2 item size={{ xs: 12, md: 6 }}>
+          <Formik
+            key={'password-update-formik'}
+            ref={formik2}
+            initialValues={{
+              username: user?.email || '',
+              currentPassword: '',
+              password: '',
+              matchingPassword: ''
+            }}
+            validationSchema={ProfileSchema2}
+            onSubmit={handleSubmitForChangePassword}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              isSubmitting,
+            }) => (
+              <form onSubmit={handleSubmit}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>Change Password</Typography>
 
@@ -172,50 +224,47 @@ const ProfileSettings = () => {
                     fullWidth
                     margin="normal"
                     label="New Password"
-                    name="newPassword"
+                    name="password"
                     type="password"
-                    value={values.newPassword}
+                    value={values.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.newPassword && Boolean(errors.newPassword)}
-                    helperText={touched.newPassword && errors.newPassword}
+                    error={touched.password && Boolean(errors.password)}
+                    helperText={touched.password && errors.password}
                   />
 
                   <TextField
                     fullWidth
                     margin="normal"
                     label="Confirm Password"
-                    name="confirmPassword"
+                    name="matchingPassword"
                     type="password"
-                    value={values.confirmPassword}
+                    value={values.matchingPassword}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.confirmPassword && Boolean(errors.confirmPassword)}
-                    helperText={touched.confirmPassword && errors.confirmPassword}
+                    error={touched.matchingPassword && Boolean(errors.matchingPassword)}
+                    helperText={touched.matchingPassword && errors.matchingPassword}
                   />
                 </Paper>
-              </Grid2>
-
-              <Grid2 item size={{ xs: 12 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || loading}
+                    disabled={isSubmitting}
                     sx={{ width: 200 }}
                   >
-                    {isSubmitting || loading ? (
+                    {isSubmitting ? (
                       <CircularProgress size={24} color="inherit" />
                     ) : (
-                      'Save Changes'
+                      'Update Password'
                     )}
                   </Button>
                 </Box>
-              </Grid2>
-            </Grid2>
-          </form>
-        )}
-      </Formik>
+              </form>
+            )}
+          </Formik>
+        </Grid2>
+      </Grid2>
     </Paper>
   );
 };

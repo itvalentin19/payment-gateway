@@ -6,7 +6,7 @@ import { selectAccountById } from '../admin/accountsSlice';
 import { selectClientById } from '../admin/clientsSlice';
 import { setLoading, showToast } from '../ui/uiSlice';
 import { apiClient } from '../../utilities/api';
-import { ENDPOINTS } from '../../utilities/constants';
+import { ENDPOINTS, TRANSACTION_TYPES } from '../../utilities/constants';
 
 const WithdrawalPage = () => {
   const dispatch = useDispatch();
@@ -31,12 +31,10 @@ const WithdrawalPage = () => {
       const reqBody = {
         accountId: selected.id,
         amount: availableAmount,
-        transactionType: 1,
+        transactionType: TRANSACTION_TYPES.WITHDRAWAL,
         currency: selected.currencyCode
       }
       res = await apiClient.post(ENDPOINTS.CREATE_TRANSACTION, reqBody);
-      console.log(res);
-
       if (res.status === 200) {
         dispatch(showToast({
           message: res.data.message || res.message || 'Transaction request made!',
@@ -71,7 +69,7 @@ const WithdrawalPage = () => {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant='h6'>Balance:</Typography>
-              <Typography>${selected.accountBalance?.toLocaleString()}</Typography>
+              <Typography>${selected?.accountBalance?.toLocaleString()}</Typography>
             </Box>
             <Divider sx={{ my: 4 }} />
 

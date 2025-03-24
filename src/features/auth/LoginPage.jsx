@@ -11,7 +11,6 @@ import {
   Paper
 } from '@mui/material';
 import { login } from './authSlice';
-import { updateProfile } from '../profile/profileSlice';
 
 const LoginSchema = Yup.object().shape({
   username: Yup.string()
@@ -30,7 +29,6 @@ const LoginPage = () => {
     try {
       const resultAction = await dispatch(login(values));
       if (login.fulfilled.match(resultAction)) {
-        dispatch(updateProfile(values))
         navigate('/');
       }
     } catch (error) {

@@ -66,9 +66,6 @@ const DashboardPage = () => {
       let res;
       res = await apiClient.get(ENDPOINTS.GET_TRANSACTION_DASHBOARD + tabValue);
       if (res.status === 200) {
-        console.log("res.data");
-        console.log(res.data);
-        
         dispatch(addTransactions(res.data.recentTransactions));
         setTotalDeposit(res.data.totalDeposit);
         setTotalWithdrawal(res.data.totalWithdrawal);

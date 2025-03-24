@@ -31,6 +31,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchAccounts, selectAccount } from '../admin/accountsSlice';
 import { selectClientById } from '../admin/clientsSlice';
+import { showToast } from '../ui/uiSlice';
 
 const Transactions = () => {
   const dispatch = useDispatch();
@@ -38,7 +39,7 @@ const Transactions = () => {
   const { accounts } = useSelector((state) => state.accounts);
   const user = useSelector((state) => userId ? selectClientById(state, userId) : null);
   const { transactions, query } = useSelector((state) => state.transactions);
-  const [selectedAccount, setSelectedAccount] = useState(1);
+  const [selectedAccount, setSelectedAccount] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -79,6 +80,17 @@ const Transactions = () => {
 
   const navigate = useNavigate();
 
+  const handleClickWithdrawal = () => {
+    if (selectedAccount) {
+      navigate('withdrawal')
+    } else {
+      dispatch(showToast({
+        message: "Select A bank Account First",
+        type: 'warning'
+      }))
+    }
+  }
+
   const statusColor = {
     pending: 'warning',
     in_progress: 'info',
@@ -95,7 +107,7 @@ const Transactions = () => {
       </Typography>
       <Chip
         label={"Withdrawal"}
-        onClick={() => navigate('withdrawal')}
+        onClick={handleClickWithdrawal}
         sx={{ bgcolor: '#65558F', color: 'white' }}
         variant="filled"
         size="small"

@@ -2,7 +2,7 @@ export const BASE_API_URL = "https://p01--payment-backend--956bql6nq7mj.code.run
 export const ENDPOINTS = {
     // users
     GET_USERS: 'users',
-    UPDATE_USERS: 'users',
+    UPDATE_USER: 'users',
     CREATE_USER: 'users',
     CREATE_USER_ROLES: 'users/{id}/roles',
     UPDATE_USER_PASSWORD: 'users/resetPassword',
@@ -107,4 +107,28 @@ export const ROLES = {
     ROLE_CLIENT: "ROLE_CLIENT",
     UPDATE: "UPDATE",
     ROLE_ADMIN: "ROLE_ADMIN",
+}
+
+// Transaction Types
+export const TRANSACTION_TYPES = {
+    DEPOSIT: 0,
+    WITHDRAWAL: 1,
+    REFUND: 2,
+}
+
+// Transaction Status
+export const TRANSACTION_STATUS = {
+    PENDING: 0,
+    COMPLETED: 1,
+    REFUNDED: 2,
+    FAILED: 3,
+    CANCEL: 4,
+    CLOSE: 5,
+}
+
+// Account Status
+export const ACCOUNT_STATUS = {
+    ACTIVE: 0,
+    INACTIVE: 1,
+    SUSPENDED: 2,
 }

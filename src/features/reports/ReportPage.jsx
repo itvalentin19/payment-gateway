@@ -4,7 +4,7 @@ import { Box, IconButton, Checkbox, FormGroup, FormControlLabel, Pagination, Typ
 import FilterListIcon from '@mui/icons-material/FilterList';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useDispatch, useSelector } from 'react-redux';
-import { ROLES } from '../../utilities/constants';
+import { ROLES, TRANSACTION_TYPES } from '../../utilities/constants';
 import { fetchReports, setQuery } from './reportsSlice';
 
 export default function ReportPage() {
@@ -48,11 +48,8 @@ export default function ReportPage() {
             newQuery.endDate = now.toISOString();
         }
 
-        if (selectedType === 'Withdrawal') {
-            newQuery.transactionType = 1;
-        }
-        if (selectedType === 'Deposit') {
-            newQuery.transactionType = 2;
+        if (selectedType != null) {
+            newQuery.transactionType = TRANSACTION_TYPES[selectedType.toUpperCase()];
         }
         dispatch(setQuery(newQuery));
     }, [page, selectedType, selectedPeriod, dispatch]);
@@ -61,7 +58,9 @@ export default function ReportPage() {
         pending: 'warning',
         in_progress: 'info',
         completed: 'success',
-        error: 'error'
+        error: 'error',
+        refunded: 'warning',
+        close: 'secondary',
     };
 
     const columns = roles?.includes(ROLES.ROLE_ADMIN) ? [
@@ -100,6 +99,8 @@ export default function ReportPage() {
                 if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
                 if (transaction.transactionStatus === "FAILED") type = statusColor.error;
                 if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                if (transaction.transactionStatus === "REFUNDED") type = statusColor.refunded;
+                if (transaction.transactionStatus === "CLOSE") type = statusColor.close;
                 return (
                     <Box
                         sx={{
@@ -165,6 +166,8 @@ export default function ReportPage() {
                 if (transaction.transactionStatus === "CANCEL") type = statusColor.pending;
                 if (transaction.transactionStatus === "FAILED") type = statusColor.error;
                 if (transaction.transactionStatus === "COMPLETED") type = statusColor.completed;
+                if (transaction.transactionStatus === "REFUNDED") type = statusColor.refunded;
+                if (transaction.transactionStatus === "CLOSE") type = statusColor.close;
                 return (
                     <Box
                         sx={{

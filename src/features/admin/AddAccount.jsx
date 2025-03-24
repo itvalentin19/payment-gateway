@@ -5,7 +5,7 @@ import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem } from '@mui
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiClient } from '../../utilities/api';
-import { ENDPOINTS } from '../../utilities/constants';
+import { ACCOUNT_STATUS, ENDPOINTS } from '../../utilities/constants';
 import { fetchAccounts, selectAccountById, updateAccount } from './accountsSlice';
 import { setLoading, showToast } from '../ui/uiSlice';
 import { fetchClients } from './clientsSlice';
@@ -45,7 +45,7 @@ const AddAccount = () => {
         ...values,
         maxDailyTransaction: isEditMode ? account.maxDailyTransaction : 10000,
         maxMonthlyTransaction: isEditMode ? account.maxMonthlyTransaction : 500000,
-        accountStatus: client.userStatus === "ACTIVE" ? 0 : 1
+        accountStatus: ACCOUNT_STATUS[client.userStatus]
       }
       dispatch(setLoading(true));
       try {
