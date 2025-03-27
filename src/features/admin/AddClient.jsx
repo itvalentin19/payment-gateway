@@ -16,7 +16,6 @@ const validationSchema = Yup.object({
   name: Yup.string().required('Required'),
   roleIds: Yup.array().required('Required'),
   email: Yup.string().email('Invalid email').required('Required'),
-  packageId: Yup.string().required('Required'),
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')
     .required('Required'),
@@ -28,7 +27,6 @@ const validationSchema = Yup.object({
 const validationEditSchema = Yup.object({
   name: Yup.string().required('Required'),
   roleIds: Yup.array().required('Required'),
-  packageId: Yup.string().required('Required'),
 });
 
 const AddClient = () => {
@@ -43,7 +41,6 @@ const AddClient = () => {
   );
   const { roles } = useSelector(state => state.accounts);
   const [roleIds, setRoleIds] = useState(isEditMode ? client?.roles?.map(role => role?.id) : []);
-  const { packages } = useSelector(state => state.packages);
 
   const ITEM_HEIGHT = 48;
   const ITEM_PADDING_TOP = 8;
@@ -68,7 +65,6 @@ const AddClient = () => {
     initialValues: {
       name: isEditMode ? client?.name : '',
       roleIds: isEditMode ? client?.roles?.map(role => role?.id) : [],
-      packageId: isEditMode ? client?.packageDTO?.id : '',
       ...(isEditMode && {
         userStatus: 0
       }),
@@ -244,34 +240,6 @@ const AddClient = () => {
               )
             }
 
-            <Grid2 columns={12} size={12}>
-              <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
-                <Grid2 columns={3}>
-                  <Typography variant="subtitle1">Tier:</Typography>
-                </Grid2>
-                <Grid2 item columns={9}>
-                  <TextField
-                    fullWidth
-                    id="packageId"
-                    name="packageId"
-                    value={formik.values.packageId}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.packageId && Boolean(formik.errors.packageId)}
-                    helperText={formik.touched.packageId && formik.errors.packageId}
-                    select
-                  >
-                    {
-                      packages?.map(pkg => {
-                        return (
-                          <MenuItem key={pkg.id} value={pkg.id}>{pkg.packageTier}</MenuItem>
-                        )
-                      })
-                    }
-                  </TextField>
-                </Grid2>
-              </Grid2>
-            </Grid2>
             {
               !isEditMode && (
                 <Grid2 columns={12} size={12}>

@@ -39,21 +39,6 @@ const ClientManagement = () => {
     },
     { field: 'email', headerName: 'Email', width: 200 },
     {
-      field: 'packageDTO', headerName: 'Tier', width: 120,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            px: 1,
-            borderRadius: 1,
-          }}
-        >
-          {params.value?.packageTier}
-        </Box>
-      )
-    },
-    {
       field: 'userStatus',
       headerName: 'Status',
       width: 120,

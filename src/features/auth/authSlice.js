@@ -42,6 +42,9 @@ const authSlice = createSlice({
       state.email = null;
       state.roles = null;
       localStorage.removeItem('accessToken');
+    },
+    clearError: (state) => {
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
@@ -77,6 +80,6 @@ const persistConfig = {
   storage,
 };
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export const persistedAuthReducer = persistReducer(persistConfig, authSlice.reducer);
 export default authSlice.reducer;

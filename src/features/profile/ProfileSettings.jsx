@@ -158,8 +158,10 @@ const ProfileSettings = () => {
                     label="Package"
                     name="package"
                     value={user?.packageDTO?.packageTier || ''}
-                    InputProps={{
-                      readOnly: true,
+                    slotProps={{
+                      input: {
+                        readOnly: true,
+                      }
                     }}
                   />
                 </Paper>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem, Divider } from '@mui/material';
+import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem, Divider, InputAdornment } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiClient } from '../../utilities/api';
@@ -10,7 +10,8 @@ import { setLoading, showToast } from '../ui/uiSlice';
 const ThresholdSetting = () => {
   const [selectedAccount, setSelectedAccount] = useState('');
   const [maxDaily, setMaxDaily] = useState('');
-  const [maxMonthly, setMaxMonthly] = useState('');
+  const [maxPerTransaction, setMaxPerTransaction] = useState('');
+  const [minPerTransaction, setMinPerTransaction] = useState('');
   const { accounts, selected } = useSelector(state => state.accounts);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -19,9 +20,15 @@ const ThresholdSetting = () => {
     const updateAcc = {
       id: selectedAccount,
       maxDailyTransaction: parseInt(maxDaily),
-      maxMonthlyTransaction: parseInt(maxMonthly)
+      maxPerTransaction: parseInt(maxPerTransaction),
+      minPerTransaction: parseInt(minPerTransaction),
     }
-    if (selectedAccount && (selectedAccount.maxDailyTransaction !== parseInt(maxDaily) || selectedAccount.maxMonthlyTransaction !== parseInt(maxMonthly))) {
+    if (selectedAccount &&
+      (
+        selectedAccount.maxDailyTransaction !== parseInt(maxDaily) ||
+        selectedAccount.maxPerTransaction !== parseInt(maxPerTransaction) ||
+        selectedAccount.minPerTransaction !== parseInt(minPerTransaction)
+      )) {
       try {
         dispatch(setLoading(true))
         const res = await apiClient.put(ENDPOINTS.UPDATE_ACCOUNT, updateAcc);
@@ -71,7 +78,7 @@ const ThresholdSetting = () => {
               <Typography variant="h6" gutterBottom>Account Information</Typography>
               <Grid2 container spacing={3}>
                 <Grid2 columns={12} size={12}>
-                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
+                  <Grid2 container alignItems="center" justifyContent="space-between">
                     <Grid2 columns={3}>
                       <Typography variant="subtitle1">Account:</Typography>
                     </Grid2>
@@ -85,7 +92,8 @@ const ThresholdSetting = () => {
                           setSelectedAccount(e.target.value);
                           dispatch(selectAccount(e.target.value))
                           setMaxDaily(account?.maxDailyTransaction || '');
-                          setMaxMonthly(account?.maxMonthlyTransaction || '');
+                          setMaxPerTransaction(account?.maxPerTransaction || '');
+                          setMinPerTransaction(account?.minPerTransaction || '');
                         }}
                         sx={{ minWidth: 200 }}
                         slotProps={{
@@ -111,14 +119,6 @@ const ThresholdSetting = () => {
                       <Typography variant="subtitle1">{selected?.bank}</Typography>
                     </Grid2>
                   </Grid2>
-                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4} sx={{ mt: 2 }}>
-                    <Grid2 columns={3}>
-                      <Typography variant="subtitle1">Account:</Typography>
-                    </Grid2>
-                    <Grid2 columns={9}>
-                      <Typography variant="subtitle1">{selected?.accountNumber}</Typography>
-                    </Grid2>
-                  </Grid2>
                 </Grid2>
               </Grid2>
             </Grid2>
@@ -128,33 +128,65 @@ const ThresholdSetting = () => {
             {/* Threshold Settings Section */}
             <Grid2 columns={12} size={6}>
               <Grid2 container spacing={3}>
+
                 <Grid2 columns={12} size={12}>
-                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
-                    <Grid2 columns={3}>
-                      <Typography variant="subtitle1">Max Daily Transaction:</Typography>
+                  <Grid2 container alignItems="center" justifyContent="space-between">
+                    <Grid2 size={{xs: 12, sm: 8}}>
+                      <Typography variant="subtitle1">Min Per Transaction:</Typography>
                     </Grid2>
-                    <Grid2 columns={9}>
+                    <Grid2 size={{xs: 12, sm: 4}}>
                       <TextField
                         fullWidth
                         type="number"
-                        value={maxDaily}
-                        onChange={(e) => setMaxDaily(e.target.value)}
+                        value={minPerTransaction}
+                        onChange={(e) => setMinPerTransaction(e.target.value)}
+                        slotProps={{
+                          input: {
+                            startAdornment: <InputAdornment position="start">MYR</InputAdornment>,
+                          },
+                        }}
                       />
                     </Grid2>
                   </Grid2>
                 </Grid2>
 
                 <Grid2 columns={12} size={12}>
-                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
-                    <Grid2 columns={3}>
-                      <Typography variant="subtitle1">Max Monthly Transaction:</Typography>
+                  <Grid2 container alignItems="center" justifyContent="space-between">
+                    <Grid2 size={{xs: 12, sm: 8}}>
+                      <Typography variant="subtitle1">Max Per Transaction:</Typography>
                     </Grid2>
-                    <Grid2 columns={9}>
+                    <Grid2 size={{xs: 12, sm: 4}}>
                       <TextField
                         fullWidth
                         type="number"
-                        value={maxMonthly}
-                        onChange={(e) => setMaxMonthly(e.target.value)}
+                        value={maxPerTransaction}
+                        onChange={(e) => setMaxPerTransaction(e.target.value)}
+                        slotProps={{
+                          input: {
+                            startAdornment: <InputAdornment position="start">MYR</InputAdornment>,
+                          },
+                        }}
+                      />
+                    </Grid2>
+                  </Grid2>
+                </Grid2>
+
+                <Grid2 columns={12} size={12}>
+                  <Grid2 container alignItems="center" justifyContent="space-between">
+                    <Grid2 size={{xs: 12, sm: 8}}>
+                      <Typography variant="subtitle1">Max Daily Transaction:</Typography>
+                    </Grid2>
+                    <Grid2 size={{xs: 12, sm: 4}}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        value={maxDaily}
+                        onChange={(e) => setMaxDaily(e.target.value)}
+                        slotProps={{
+                          input: {
+                            startAdornment: <InputAdornment position="start">MYR</InputAdornment>,
+                          },
+                        }}
                       />
                     </Grid2>
                   </Grid2>

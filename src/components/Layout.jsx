@@ -96,14 +96,7 @@ const Layout = () => {
   const drawer = (
     <div style={{ padding: 20 }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          sx={{ width: 40, height: 40, border: '50%', bgcolor: '#EADDFF' }}
-        >
-          <PersonOutlineIcon sx={{ color: '#4F378A' }} />
-        </IconButton>
+        <img src={require('./../assets/icon.png')} alt='payment gateway logo' style={{ width: 70, height: 'auto', padding: 0, }} />
         <Typography>{roles?.includes(ROLES.ROLE_ADMIN) ? 'Admin' : 'User'}</Typography>
       </Toolbar>
       <List>

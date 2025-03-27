@@ -68,7 +68,9 @@ export const ENDPOINTS = {
     UPDATE_ACCOUNT: 'accounts',
     CREATE_ACCOUNT: 'accounts',
     QUERY_ACCOUNTS: 'accounts/query',
+    ACCOUNT_UPLOAD_QR: 'accounts/{id}/upload-qr',
     GET_ACCOUNT: 'accounts/{id}',
+    ACCOUNT_GET_QR: 'accounts/{id}/qr-code',
     DELETE_ACCOUNT: 'accounts/{id}',
 
     // auth
