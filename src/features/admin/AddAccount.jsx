@@ -42,8 +42,6 @@ const AddAccount = () => {
       const client = clients.find(cli => cli.id === parseInt(values.userId));
       const newAcc = {
         ...values,
-        accountNumber: '123123232',
-        token: 'sdfr23sw',
         maxDailyTransaction: isEditMode ? account.maxDailyTransaction : 10000,
         maxPerTransaction: isEditMode ? account.maxPerTransaction : 5000,
         minPerTransaction: isEditMode ? account.minPerTransaction : 100,
@@ -68,11 +66,10 @@ const AddAccount = () => {
           res = await apiClient.post(ENDPOINTS.CREATE_ACCOUNT, newAcc);
           if (res.data && res.data.id) {
             const formData = new FormData();
-            formData.append('qr-image', qrCodeImage);
+            formData.append('file', qrCodeImage);
             await apiClient.post(ENDPOINTS.ACCOUNT_UPLOAD_QR.replace('{id}', res.data.id), formData);
           }
         }
-        console.log(res);
 
         if (res.status === 200) {
           dispatch(updateAccount(res.data));
@@ -90,7 +87,6 @@ const AddAccount = () => {
         dispatch(setLoading(false));
         navigate("/account-management");
       } catch (error) {
-        console.log(error);
         let message;
         if (error.response && error.response.data) {
           message = error.response.data.message;

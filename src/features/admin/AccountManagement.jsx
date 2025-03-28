@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { ENDPOINTS, ROLES } from '../../utilities/constants';
-import { fetchAccounts, selectAccount, selectAccountById } from './accountsSlice';
-import { fetchPackages } from './packagesSlice';
+import { deleteAccount, fetchAccounts, selectAccount, selectAccountById } from './accountsSlice';
+import { deletePackage, fetchPackages } from './packagesSlice';
 import { hideModal, setLoading, showModal, showToast } from '../ui/uiSlice';
 import { apiClient } from '../../utilities/api';
 
@@ -23,7 +23,7 @@ const modalStyle = {
 
 function Row(props) {
   const { data, openPackageDeleteModal } = props;
-  const account = useSelector((state) => selectAccountById(state, parseInt(data.accountId)));
+  const account = useSelector((state) => selectAccountById(state, parseInt(data.accounts?.[0]?.id)));
   const tierList = data.packageTiers;
 
   return (
@@ -31,9 +31,9 @@ function Row(props) {
       {
         tierList.map((tier, index) => {
           return (
-            <TableRow key={index} sx={{ '& > *': { borderBottom: 'unset' } }}>
-              <TableCell sx={index !== tierList.length - 1 && { borderBottom: 'unset' }}>
-                {index === 0 ? data?.packageName : ""}
+            <TableRow key={index} sx={index !== tierList.length - 1 && { '& > *': { borderBottom: 'unset' } }}>
+              <TableCell>
+                {index === 0 ? account?.name : ""}
               </TableCell>
               <TableCell>{tier.tierName}</TableCell>
               <TableCell>{tier.feeRate * 100}</TableCell>
@@ -92,7 +92,7 @@ const AccountManagement = () => {
             borderRadius: 1,
           }}
         >
-          <Button onClick={() => openQRCode(params.row.id)} variant='outlined' size='small'>
+          <Button onClick={() => openQRCode(params.row)} variant='outlined' size='small'>
             View Code
           </Button>
         </Box>
@@ -150,24 +150,12 @@ const AccountManagement = () => {
     }
   ];
 
-  const openQRCode = async (id) => {
+  const openQRCode = async (acc) => {
     try {
-      dispatch(setLoading(true));
-      const res = await apiClient.get(ENDPOINTS.ACCOUNT_GET_QR.replace('{id}', id), { responseType: 'blob' });
-      if (res.status === 200) {
-        const url = URL.createObjectURL(res.data);
-        setQRImage(url);
-      } else {
-        dispatch(showToast({
-          message: "Something went wrong!",
-          type: 'error'
-        }))
-      }
+      const dataUrl = `data:image/jpeg;base64,${acc.qrCodeBase64}`;
+      setQRImage(dataUrl);
       setOpenQRModal(true);
-      dispatch(hideModal());
-      dispatch(setLoading(false));
     } catch (error) {
-      dispatch(setLoading(false));
       dispatch(showToast({
         message: error.message || "Something went wrong!",
         type: 'error'
@@ -184,6 +172,7 @@ const AccountManagement = () => {
       dispatch(setLoading(true));
       const res = await apiClient.delete(ENDPOINTS.DELETE_ACCOUNT.replace('{id}', id));
       if (res.status === 200) {
+        dispatch(deleteAccount(id));
         dispatch(showToast({
           message: res.message || res.data.message || "Account was deleted!",
           type: 'success'
@@ -219,6 +208,7 @@ const AccountManagement = () => {
       dispatch(setLoading(true));
       const res = await apiClient.delete(ENDPOINTS.DELETE_PACKAGE.replace('{id}', id));
       if (res.status === 200) {
+        dispatch(deletePackage(id));
         dispatch(showToast({
           message: res.message || res.data.message || "Package was deleted!",
           type: 'success'

@@ -93,7 +93,7 @@ const ThresholdSetting = () => {
                           dispatch(selectAccount(e.target.value))
                           setMaxDaily(account?.maxDailyTransaction || '');
                           setMaxPerTransaction(account?.maxPerTransaction || '');
-                          setMinPerTransaction(account?.minPerTransaction || '');
+                          setMinPerTransaction(account?.minPerTransaction);
                         }}
                         sx={{ minWidth: 200 }}
                         slotProps={{

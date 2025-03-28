@@ -29,6 +29,9 @@ const packagesSlice = createSlice({
       if (index !== -1) {
         state.packages[index] = action.payload;
       }
+    },
+    deletePackage: (state, action) => {
+      state.packages = state.packages.filter(pkg => pkg.id !== action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -47,7 +50,7 @@ const packagesSlice = createSlice({
   }
 });
 
-export const { addPackage, updatePackage } = packagesSlice.actions;
+export const { addPackage, updatePackage, deletePackage } = packagesSlice.actions;
 export const selectPackageById = (state, packageId) =>
   state.packages.packages.find(pkg => pkg.id === packageId);
 export default packagesSlice.reducer;

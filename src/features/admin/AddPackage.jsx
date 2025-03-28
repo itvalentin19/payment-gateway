@@ -44,8 +44,10 @@ const AddPackage = () => {
     packageId ? selectPackageById(state, parseInt(packageId)) : null
   );
   const account = useSelector(state =>
-    packageId ? selectAccountById(state, parseInt(packageId)) : null
+    packageId ? selectAccountById(state, pkg?.accounts?.[0]?.id) : null
   );
+  console.log(account);
+  
   const theme = useTheme();
   const sm = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -60,6 +62,12 @@ const AddPackage = () => {
     dispatch(fetchPackages());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (account) {
+      setSelectedAccount(account.id);
+    }
+  }, [account]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -69,7 +77,13 @@ const AddPackage = () => {
       feeRate: pkg ? pkg.feeRate : '',
       minAmount: pkg ? pkg.minAmount : '',
       maxAmount: pkg ? pkg.maxAmount : '',
-      tiers: pkg ? pkg.packageTiers : [],
+      tiers: pkg ? pkg.packageTiers.map((item) => ({
+        id: item.id,
+        tierName: item.tierName,
+        feeRate: item.feeRate,
+        minAmount: item.minAmount,
+        maxAmount: item.maxAmount
+      })) : [],
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {

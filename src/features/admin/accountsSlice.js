@@ -43,7 +43,10 @@ const accountsSlice = createSlice({
     },
     selectAccount: (state, action) => {
       state.selected = state.accounts.find(acc => acc.id === action.payload)
-    }
+    },
+    deleteAccount: (state, action) => {
+      state.accounts = state.accounts.filter(acc => acc.id !== action.payload)
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -73,7 +76,7 @@ const accountsSlice = createSlice({
   }
 });
 
-export const { addAccount, updateAccount, selectAccount } = accountsSlice.actions;
+export const { addAccount, updateAccount, selectAccount, deleteAccount } = accountsSlice.actions;
 export const selectAccountById = (state, accountId) =>
   state.accounts.accounts.find(acc => acc.id === accountId);
 export default accountsSlice.reducer;
