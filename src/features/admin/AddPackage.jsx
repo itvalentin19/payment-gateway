@@ -38,7 +38,6 @@ const AddPackage = () => {
   const { packageId } = useParams();
   const isEditMode = !!packageId;
 
-  const { packages } = useSelector(state => state.packages);
   const { accounts, selected } = useSelector(state => state.accounts);
   const pkg = useSelector(state =>
     packageId ? selectPackageById(state, parseInt(packageId)) : null
@@ -46,13 +45,11 @@ const AddPackage = () => {
   const account = useSelector(state =>
     packageId ? selectAccountById(state, pkg?.accounts?.[0]?.id) : null
   );
-  console.log(account);
   
   const theme = useTheme();
   const sm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [selectedAccount, setSelectedAccount] = useState('');
-  const [maxDaily, setMaxDaily] = useState('');
   const [maxPerTransaction, setMaxPerTransaction] = useState('');
   const [minPerTransaction, setMinPerTransaction] = useState('');
   const [tiers, setTiers] = useState(pkg ? pkg.packageTiers : []);
@@ -213,7 +210,6 @@ const AddPackage = () => {
                         const account = accounts?.find(a => a.id === e.target.value);
                         setSelectedAccount(e.target.value);
                         dispatch(selectAccount(e.target.value))
-                        setMaxDaily(account?.maxDailyTransaction || '');
                         setMaxPerTransaction(account?.maxPerTransaction || '');
                         setMinPerTransaction(account?.minPerTransaction || '');
                       }}

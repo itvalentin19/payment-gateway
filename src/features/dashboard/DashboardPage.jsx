@@ -26,12 +26,14 @@ import { addTransactions, fetchTransactions } from '../transactions/transactions
 import { fetchClients } from '../admin/clientsSlice';
 import { setLoading, showToast } from '../ui/uiSlice';
 import { apiClient } from '../../utilities/api';
+import { fetchAccounts } from '../admin/accountsSlice';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const { roles } = useSelector((state) => state.auth);
   const [tabValue, setTabValue] = useState('today');
   const { transactions, pagination } = useSelector(state => state.transactions);
+  const { accounts } = useSelector(state => state.accounts);
   const { clients } = useSelector(state => state.clients);
   const [totalDeposit, setTotalDeposit] = useState(0);
   const [totalWithdrawal, setTotalWithdrawal] = useState(0);
@@ -46,7 +48,7 @@ const DashboardPage = () => {
     },
     {
       title: roles?.includes(ROLES.ROLE_ADMIN) ? 'Active Clients' : 'Account Balance',
-      value: roles?.includes(ROLES.ROLE_ADMIN) ? clients?.length : totalDeposit,
+      value: roles?.includes(ROLES.ROLE_ADMIN) ? clients?.length : accounts?.reduce((sum, p) => sum + p.accountBalance, 0) || 0,
       icon: roles?.includes(ROLES.ROLE_ADMIN) ? <ClientsIcon fontSize="large" /> : <BalanceIcon fontSize="large" />,
       color: '#4caf50'
     },
@@ -55,9 +57,12 @@ const DashboardPage = () => {
   useEffect(() => {
     fetchData();
   }, [dispatch, tabValue]);
-
+  
   useEffect(() => {
     dispatch(fetchClients());
+    if (roles?.includes(ROLES.ROLE_ADMIN) == false) {
+      dispatch(fetchAccounts());
+    }
   }, []);
 
   const fetchData = async () => {
@@ -218,8 +223,7 @@ const DashboardPage = () => {
                     <TableCell>ID</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Funds</TableCell>
-                    <TableCell>Bank</TableCell>
-                    <TableCell>Account</TableCell>
+                    {/* <TableCell>Bank</TableCell> */}
                     <TableCell>Type</TableCell>
                     <TableCell>Status</TableCell>
                   </>
@@ -255,8 +259,7 @@ const DashboardPage = () => {
                         <TableCell>{transaction.orderId}</TableCell>
                         <TableCell>{new Date(transaction.date).toLocaleString()}</TableCell>
                         <TableCell>{transaction.amount} {transaction.currency}</TableCell>
-                        <TableCell>{transaction.transactionAccount?.bank}</TableCell>
-                        <TableCell>******{transaction.transactionAccount?.accountNumber.substring(5)}</TableCell>
+                        {/* <TableCell>{transaction.transactionAccount?.bank}</TableCell> */}
                         <TableCell>{transaction.transactionType}</TableCell>
                         <TableCell>
                           <Chip

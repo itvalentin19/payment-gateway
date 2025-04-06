@@ -152,7 +152,7 @@ const ProfileSettings = () => {
                     helperText={touched.email && errors.email}
                   />
 
-                  <TextField
+                  {/* <TextField
                     fullWidth
                     margin="normal"
                     label="Package"
@@ -163,7 +163,7 @@ const ProfileSettings = () => {
                         readOnly: true,
                       }
                     }}
-                  />
+                  /> */}
                 </Paper>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <Button

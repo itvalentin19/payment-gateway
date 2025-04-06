@@ -122,7 +122,6 @@ const TransactionMonitoring = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Bank</TableCell>
-                <TableCell>Acc</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Action</TableCell>
@@ -141,7 +140,6 @@ const TransactionMonitoring = () => {
                     <TableCell>{transaction.transactionAccount?.name}</TableCell>
                     <TableCell>{transaction.amount} {transaction.currency}</TableCell>
                     <TableCell>{transaction.transactionAccount?.bank}</TableCell>
-                    <TableCell>{transaction.transactionAccount?.accountNumber}</TableCell>
                     <TableCell>
                       <Chip
                         label={transaction.transactionStatus}

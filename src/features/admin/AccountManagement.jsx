@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, TableContainer, TableHead, TableRow, TableCell, TableBody, IconButton, Collapse, Table, Modal } from '@mui/material';
+import { Box, Typography, Button, TableContainer, TableHead, TableRow, TableCell, TableBody, Table, Modal } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { ENDPOINTS, ROLES } from '../../utilities/constants';
-import { deleteAccount, fetchAccounts, selectAccount, selectAccountById } from './accountsSlice';
+import { deleteAccount, fetchAccounts, selectAccountById } from './accountsSlice';
 import { deletePackage, fetchPackages } from './packagesSlice';
 import { hideModal, setLoading, showModal, showToast } from '../ui/uiSlice';
 import { apiClient } from '../../utilities/api';
@@ -34,6 +34,9 @@ function Row(props) {
             <TableRow key={index} sx={index !== tierList.length - 1 && { '& > *': { borderBottom: 'unset' } }}>
               <TableCell>
                 {index === 0 ? account?.name : ""}
+              </TableCell>
+              <TableCell>
+                {index === 0 ? data.packageName : ""}
               </TableCell>
               <TableCell>{tier.tierName}</TableCell>
               <TableCell>{tier.feeRate * 100}</TableCell>
@@ -65,7 +68,7 @@ function Row(props) {
 const AccountManagement = () => {
   const dispatch = useDispatch();
   const { roles } = useSelector(state => state.auth);
-  const { accounts, selected } = useSelector(state => state.accounts);
+  const { accounts } = useSelector(state => state.accounts);
   const { packages } = useSelector(state => state.packages);
   const [openQRModal, setOpenQRModal] = useState(false);
   const [qrImage, setQRImage] = useState(null);
@@ -75,7 +78,7 @@ const AccountManagement = () => {
     if (roles?.includes(ROLES.ROLE_ADMIN)) {
       dispatch(fetchPackages());
     }
-  }, [roles]);
+  }, [dispatch, roles]);
 
   const paymentColumns = [
     { field: 'id', headerName: 'ID', width: 70 },
@@ -98,8 +101,10 @@ const AccountManagement = () => {
         </Box>
       )
     },
-    { field: 'currencyCode', headerName: 'Currency', width: 100 },
-    { field: 'status', headerName: 'Status', width: 200 },
+    { field: 'minPerTransaction', headerName: 'Min Per Trans', width: 150 },
+    { field: 'maxPerTransaction', headerName: 'Max Per Trans', width: 150 },
+    { field: 'maxDailyTransaction', headerName: 'Max Daily Trans', width: 150 },
+    { field: 'status', headerName: 'Status', width: 100 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -114,37 +119,6 @@ const AccountManagement = () => {
             Edit
           </Button>
           <Button color="error" onClick={() => openAccountDeleteModal(params.row.id)}>Delete</Button>
-        </Box>
-      )
-    }
-  ];
-
-  const packageColumns = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'name', headerName: 'Tier', width: 130 },
-    { field: 'commissionRate', headerName: 'Service Fee (%)', width: 150 },
-    {
-      field: 'funds', headerName: 'Funds', width: 300,
-      renderCell: (params) => (
-        <Box>
-          ${params.row.min} - ${params.row.max}
-        </Box>
-      )
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 150,
-      renderCell: (params) => (
-        <Box>
-          <Button
-            color="primary"
-            component={Link}
-            to={`/account-management/edit-package/${params.row.id}`}
-          >
-            Edit
-          </Button>
-          <Button color="error" onClick={() => openPackageDeleteModal(params.row.id)}>Delete</Button>
         </Box>
       )
     }
@@ -296,6 +270,7 @@ const AccountManagement = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Client</TableCell>
+                      <TableCell>Package Name</TableCell>
                       <TableCell>Tier</TableCell>
                       <TableCell>Service Fee(%)</TableCell>
                       <TableCell>Funds</TableCell>

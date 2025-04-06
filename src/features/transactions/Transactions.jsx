@@ -1,32 +1,22 @@
 import { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Chip,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
-  IconButton,
   Typography,
   Divider,
   Radio,
-  Button,
   Menu
 } from '@mui/material';
-import { Search, NavigateNext as ActionIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTransactions, addTransactions, fetchBalance } from './transactionsSlice';
-import { DataGrid } from '@mui/x-data-grid';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchAccounts, selectAccount } from '../admin/accountsSlice';
@@ -40,9 +30,6 @@ const Transactions = () => {
   const user = useSelector((state) => userId ? selectClientById(state, userId) : null);
   const { transactions, query } = useSelector((state) => state.transactions);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -130,7 +117,6 @@ const Transactions = () => {
                 <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Bank</TableCell>
-                <TableCell>Account</TableCell>
                 <TableCell>Token</TableCell>
                 <TableCell>Select</TableCell>
               </TableRow>
@@ -141,7 +127,6 @@ const Transactions = () => {
                   <TableCell>{account.id}</TableCell>
                   <TableCell>{account.name}</TableCell>
                   <TableCell>{account.bank}</TableCell>
-                  <TableCell>{account.accountNumber}</TableCell>
                   <TableCell>{account.token}</TableCell>
                   <TableCell>
                     <Radio
@@ -169,7 +154,6 @@ const Transactions = () => {
                 <TableCell>ID</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Bank</TableCell>
-                <TableCell>Account</TableCell>
                 <TableCell>Funds</TableCell>
                 <TableCell>Status</TableCell>
               </TableRow>
@@ -186,7 +170,6 @@ const Transactions = () => {
                     <TableCell>{transaction.id}</TableCell>
                     <TableCell>{new Date(transaction.createDate).toLocaleString()}</TableCell>
                     <TableCell>{transaction.transactionAccount?.bank}</TableCell>
-                    <TableCell>{transaction.transactionAccount?.accountNumber}</TableCell>
                     <TableCell>${transaction.amount}</TableCell>
                     <TableCell>
                       <Chip

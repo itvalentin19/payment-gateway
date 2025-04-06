@@ -5,8 +5,8 @@ import { Box, Typography, TextField, Button, Grid2, Paper, MenuItem } from '@mui
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiClient } from '../../utilities/api';
-import { ACCOUNT_STATUS, ENDPOINTS } from '../../utilities/constants';
-import { fetchAccounts, selectAccountById, updateAccount } from './accountsSlice';
+import { ACCOUNT_STATUS, ENDPOINTS, ROLES } from '../../utilities/constants';
+import { fetchAccounts, fetchRoles, selectAccountById, updateAccount } from './accountsSlice';
 import { setLoading, showToast } from '../ui/uiSlice';
 import { fetchClients } from './clientsSlice';
 import QrCode from '../components/QrCode';
@@ -22,6 +22,7 @@ const AddAccount = () => {
   const isEditMode = !!accountId;
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { roles, userId } = useSelector(state => state.auth);
   const { clients } = useSelector(state => state.clients);
   const { accounts } = useSelector(state => state.accounts);
   const account = useSelector((state) =>
@@ -34,18 +35,16 @@ const AddAccount = () => {
     initialValues: {
       name: account ? account.name : '',
       bank: account ? account.bank : '',
-      userId: account ? account.accountUser?.id : '',
+      userId: roles?.includes(ROLES.ROLE_ADMIN) ? account ? account.accountUser?.id : '' : userId,
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       // Handle form submission here
-      const client = clients.find(cli => cli.id === parseInt(values.userId));
       const newAcc = {
         ...values,
         maxDailyTransaction: isEditMode ? account.maxDailyTransaction : 10000,
         maxPerTransaction: isEditMode ? account.maxPerTransaction : 5000,
         minPerTransaction: isEditMode ? account.minPerTransaction : 100,
-        accountStatus: ACCOUNT_STATUS[client.userStatus]
       }
       if (!qrCodeImage) {
         dispatch(showToast({
@@ -110,6 +109,7 @@ const AddAccount = () => {
 
   useEffect(() => {
     dispatch(fetchClients());
+    dispatch(fetchRoles());
   }, []);
 
   const updateQRcode = (imageData) => {
@@ -135,33 +135,37 @@ const AddAccount = () => {
           <Grid2 container spacing={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '40%', minWidth: '400px' }}>
 
             <Grid2 columns={12} size={12}>
-              <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
-                <Grid2 columns={3}>
-                  <Typography variant="subtitle1">Client:</Typography>
-                </Grid2>
-                <Grid2 item columns={9}>
-                  <TextField
-                    fullWidth
-                    id="userId"
-                    name="userId"
-                    value={formik.values.userId}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.userId && Boolean(formik.errors.userId)}
-                    helperText={formik.touched.userId && formik.errors.userId}
-                    select
-                    sx={{ minWidth: 100 }}
-                  >
-                    {
-                      clients?.map(cli => {
-                        return (
-                          <MenuItem key={cli.id} value={cli.id}>{cli.name}</MenuItem>
-                        )
-                      })
-                    }
-                  </TextField>
-                </Grid2>
-              </Grid2>
+              {
+                roles?.includes(ROLES.ROLE_ADMIN) && (
+                  <Grid2 container alignItems="center" justifyContent="space-between" spacing={4}>
+                    <Grid2 columns={3}>
+                      <Typography variant="subtitle1">Client:</Typography>
+                    </Grid2>
+                    <Grid2 item columns={9}>
+                      <TextField
+                        fullWidth
+                        id="userId"
+                        name="userId"
+                        value={formik.values.userId}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.userId && Boolean(formik.errors.userId)}
+                        helperText={formik.touched.userId && formik.errors.userId}
+                        select
+                        sx={{ minWidth: 100 }}
+                      >
+                        {
+                          clients?.map(cli => {
+                            return (
+                              <MenuItem key={cli.id} value={cli.id}>{cli.name}</MenuItem>
+                            )
+                          })
+                        }
+                      </TextField>
+                    </Grid2>
+                  </Grid2>
+                )
+              }
             </Grid2>
 
             <Grid2 columns={12} size={12}>
