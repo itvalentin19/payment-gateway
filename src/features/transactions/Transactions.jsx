@@ -117,7 +117,6 @@ const Transactions = () => {
                 <TableCell>ID</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Bank</TableCell>
-                <TableCell>Token</TableCell>
                 <TableCell>Select</TableCell>
               </TableRow>
             </TableHead>
@@ -127,7 +126,6 @@ const Transactions = () => {
                   <TableCell>{account.id}</TableCell>
                   <TableCell>{account.name}</TableCell>
                   <TableCell>{account.bank}</TableCell>
-                  <TableCell>{account.token}</TableCell>
                   <TableCell>
                     <Radio
                       checked={selectedAccount === account.id}
