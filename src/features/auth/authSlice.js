@@ -4,6 +4,21 @@ import storage from 'redux-persist/lib/storage';
 import { apiClient } from '../../utilities/api';
 import { ENDPOINTS } from '../../utilities/constants';
 
+export const checkExpiration = createAsyncThunk('auth/checkExpiration', async (_, { getState, dispatch }) => {
+  const { expiresIn } = getState().auth;
+  const expirationTimestamp = localStorage.getItem('expirationTimestamp');
+  
+  if (expirationTimestamp) {
+    const remaining = Math.floor((parseInt(expirationTimestamp) - Date.now()) / 1000);
+    
+    if (remaining <= 0) {
+      dispatch(logout());
+    }
+    return remaining;
+  }
+  return expiresIn;
+});
+
 export const login = createAsyncThunk('auth/login', async (credentials) => {
   try {
     const response = await apiClient.post(ENDPOINTS.LOGIN, credentials);
@@ -17,14 +32,16 @@ const initialState = {
   isAuthenticated: false,
   token: null,
   refreshToken: null,
-  expiresIn: null,
+  expiresIn: localStorage.getItem('expirationTimestamp') 
+    ? Math.floor((parseInt(localStorage.getItem('expirationTimestamp')) - Date.now()) / 1000)
+    : null,
   type: "Bearer",
   id: null,
   userId: null,
   email: null,
-  roles: null, // array of roles
+  roles: null,
   loading: false,
-  error: null
+  error: null,
 };
 
 const authSlice = createSlice({
@@ -42,6 +59,7 @@ const authSlice = createSlice({
       state.email = null;
       state.roles = null;
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('expirationTimestamp');
     },
     clearError: (state) => {
       state.error = null;
@@ -65,6 +83,12 @@ const authSlice = createSlice({
         state.email = action.payload.email;
         state.roles = action.payload.roles;
         localStorage.setItem('accessToken', action.payload.token);
+
+
+        // Store expiration time when logging in
+        const expirationTime = Date.now() + action.payload.expiresIn * 1000;
+        localStorage.setItem('expirationTimestamp', expirationTime);
+        state.expiresIn = action.payload.expiresIn;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

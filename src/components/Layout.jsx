@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../features/auth/authSlice';
 import {
   AppBar,
   Toolbar,
@@ -21,14 +22,11 @@ import {
   Button
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PaymentIcon from '@mui/icons-material/Payment';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { useSelector } from 'react-redux';
-import { logout } from '../../src/features/auth/authSlice';
 import { selectLoading, selectToast, hideToast, hideModal, selectModal } from '../features/ui/uiSlice';
 import { ENDPOINTS, ROLES } from '../utilities/constants';
 import { apiClient } from '../utilities/api';
@@ -52,6 +50,30 @@ const Layout = () => {
   const navigate = useNavigate();
   const { roles } = useSelector((state) => state.auth);
   const loading = useSelector(selectLoading);
+
+  // Global session timer logic
+  useEffect(() => {
+    const checkAuthTimeout = () => {
+      const expirationTime = localStorage.getItem('expirationTimestamp');
+      if (!expirationTime) return;
+
+      const remainingTime = Math.floor((parseInt(expirationTime) - Date.now()) / 1000);      
+      
+      if (remainingTime <= 0) {
+        dispatch(logout());
+        navigate('/login');
+      }
+    };
+
+    // Initial check when component mounts
+    checkAuthTimeout();
+    
+    // Set up interval for ongoing checks
+    const timer = setInterval(checkAuthTimeout, 1000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(timer);
+  }, [dispatch, navigate]);
   const toast = useSelector(selectToast);
   const modal = useSelector(selectModal);
 

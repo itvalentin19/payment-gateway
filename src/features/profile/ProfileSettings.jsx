@@ -14,6 +14,9 @@ import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { changePassword, clearError, fetchProfile, setUser, updateProfile } from './profileSlice';
 import { fetchClients, selectClientById } from '../admin/clientsSlice';
+import { apiClient } from '../../utilities/api';
+import { ENDPOINTS } from '../../utilities/constants';
+import { fetchAccounts } from '../admin/accountsSlice';
 
 const ProfileSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
@@ -34,11 +37,13 @@ const ProfileSchema2 = Yup.object({
 const ProfileSettings = () => {
   const dispatch = useDispatch();
   const { userId } = useSelector((state) => state.auth);
-  const { user, loading, error } = useSelector((state) => state.profile);
+  const { accounts } = useSelector((state) => state.accounts);
+  const { user, error } = useSelector((state) => state.profile);
   const [successMessage, setSuccessMessage] = useState('');
   const client = useSelector(state => useId ? selectClientById(state, parseInt(userId)) : null);
   const formik = useRef();
   const formik2 = useRef();
+  const [packages, setPackages] = useState([]);
 
   useEffect(() => {
     if (client) {
@@ -46,6 +51,7 @@ const ProfileSettings = () => {
     } else {
       dispatch(fetchClients());
     }
+    dispatch(fetchAccounts());
   }, [client]);
 
   useEffect(() => {
@@ -67,6 +73,21 @@ const ProfileSettings = () => {
   useEffect(() => {
     dispatch(fetchProfile(userId));
   }, [dispatch, userId]);
+
+  useEffect(() => {
+    if (accounts) {
+      getPackages();
+    }
+  }, [accounts]);
+
+  const getPackages = async () => {
+    try {
+      const pkgs = accounts.map(acc => acc.packageDTO);
+      setPackages(pkgs);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
@@ -179,6 +200,33 @@ const ProfileSettings = () => {
                     )}
                   </Button>
                 </Box>
+                <Paper sx={{ p: 2, mt: 2 }}>
+                  <Typography>Packages</Typography>
+                  {
+                    packages?.map((pkg, index) => {
+                      if (!pkg) return null;
+                      const tiers = pkg.packageTiers;
+                      return (
+                        <Paper key={index} elevation={0} sx={{ border: '1px solid gray', p: 1, mt: 1, display: 'flex', flexDirection: 'column' }}>
+                          <Box>{pkg.packageName}</Box>
+                          <Box>
+                            {
+                              tiers?.map((tier) => {
+                                return (
+                                  <Box key={tier.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                                    <Box sx={{ px: 1 }}>{tier.tierName}</Box>,
+                                    <Box sx={{ px: 1 }}>{tier.feeRate * 100}%</Box>,
+                                    <Box sx={{ px: 1 }}>${tier.minAmount} - ${tier.maxAmount}</Box>
+                                  </Box>
+                                )
+                              })
+                            }
+                          </Box>
+                        </Paper>
+                      )
+                    })
+                  }
+                </Paper>
               </form>
             )}
           </Formik>

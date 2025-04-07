@@ -33,6 +33,9 @@ function Row(props) {
           return (
             <TableRow key={index} sx={index !== tierList.length - 1 && { '& > *': { borderBottom: 'unset' } }}>
               <TableCell>
+                {index === 0 ? account?.accountUser?.name : ""}
+              </TableCell>
+              <TableCell>
                 {index === 0 ? account?.name : ""}
               </TableCell>
               <TableCell>
@@ -83,6 +86,21 @@ const AccountManagement = () => {
   const paymentColumns = [
     { field: 'id', headerName: 'ID', width: 70 },
     { field: 'name', headerName: 'Name', width: 150 },
+    {
+      field: 'client_name', headerName: 'Client Name', width: 150,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            px: 1,
+            borderRadius: 1,
+          }}
+        >
+          {params.row.accountUser?.name}
+        </Box>
+      )
+    },
     { field: 'bank', headerName: 'Bank', width: 130 },
     {
       field: 'qr-code', headerName: 'QR Code', width: 150,
@@ -270,7 +288,8 @@ const AccountManagement = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Client</TableCell>
-                      <TableCell>Package Name</TableCell>
+                      <TableCell>Account</TableCell>
+                      <TableCell>Package</TableCell>
                       <TableCell>Tier</TableCell>
                       <TableCell>Service Fee(%)</TableCell>
                       <TableCell>Funds</TableCell>

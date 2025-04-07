@@ -45,6 +45,14 @@ export const ENDPOINTS = {
     GET_PACKAGE: 'packages/{id}',
     DELETE_PACKAGE: 'packages/{id}',
 
+    // package tiers
+    GET_PACKAGE_TIERS: 'package-tiers',
+    UPDATE_PACKAGE_TIER: 'package-tiers',
+    CREATE_PACKAGE_TIER: 'package-tiers',
+    SEARCH_PACKAGE_TIERS: 'package-tiers/query',
+    GET_PACKAGE_TIER: 'package-tiers/{id}',
+    DELETE_PACKAGE_TIER: 'package-tiers/{id}',
+
     // currency
     GET_CURRENCIES: 'currencies',
     UPDATE_CURRENCIES: 'currencies',
